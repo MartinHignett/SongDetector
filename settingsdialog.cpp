@@ -20,7 +20,6 @@ SettingsDialog::SettingsDialog(QWidget *parent)
 
 SettingsDialog::~SettingsDialog()
 {
-    disconnect(m_mediaDevices.get(), &QMediaDevices::audioInputsChanged, this, &SettingsDialog::setAudioDevices);
     delete ui;
 }
 
