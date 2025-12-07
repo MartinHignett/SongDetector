@@ -1,21 +1,21 @@
-#ifndef CONFIGDIALOG_H
-#define CONFIGDIALOG_H
+#ifndef SETTINGSDIALOG_H
+#define SETTINGSDIALOG_H
 
 #include <QDialog>
 
 QT_BEGIN_NAMESPACE
-namespace Ui { class ConfigDialog; }
+namespace Ui { class SettingsDialog; }
 QT_END_NAMESPACE
 
-class ConfigDialog : public QDialog
+class SettingsDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    ConfigDialog(QWidget *parent = nullptr);
-    ~ConfigDialog();
+    SettingsDialog(QWidget *parent = nullptr);
+    ~SettingsDialog();
 
 private:
-    Ui::ConfigDialog *ui;
+    Ui::SettingsDialog *ui;
 };
-#endif // CONFIGDIALOG_H
+#endif // SETTINGSDIALOG_H

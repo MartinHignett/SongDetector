@@ -27,7 +27,7 @@ qt_add_executable(QVibra
 
 qt_add_translations(
     TARGETS QVibra
-    TS_FILES QVibra_en_GB.ts
+    TS_FILES translations/QVibra_en_GB.ts
 )
 
 qt6_add_resources(QVibra "resources"
