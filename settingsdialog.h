@@ -19,7 +19,7 @@ public:
 
 private:
     Ui::SettingsDialog *ui;
-    std::shared_ptr<QMediaDevices> m_mediaDevices;
+    QMediaDevices *m_mediaDevices;
 
     void getAudioDevices();
 

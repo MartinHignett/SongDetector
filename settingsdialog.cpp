@@ -1,7 +1,6 @@
 #include <QAudioDevice>
 #include <QMediaDevices>
 #include <QObject>
-#include <memory>
 #include <qmediadevices.h>
 
 #include "settingsdialog.h"
@@ -11,15 +10,16 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::SettingsDialog
     )
-{;
-    this->m_mediaDevices = std::make_shared<QMediaDevices>(this);
+{
+    this->m_mediaDevices = new QMediaDevices(this);
     ui->setupUi(this);
     this->setAudioDevices();
-    connect(m_mediaDevices.get(), &QMediaDevices::audioOutputsChanged, this, &SettingsDialog::setAudioDevices);
+    connect(m_mediaDevices, &QMediaDevices::audioOutputsChanged, this, &SettingsDialog::setAudioDevices);
 }
 
 SettingsDialog::~SettingsDialog()
 {
+    delete m_mediaDevices;
     delete ui;
 }
 
