@@ -13,7 +13,7 @@ set(QT_FALLBACK_VERSION "6.5.0")
 set(QT_MINIMUM_VERSION "6.2.0")
 set(KF_MIN_VERSION "6.0.0")
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets LinguistTools)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets LinguistTools Multimedia)
 
 qt_standard_project_setup()
 
@@ -37,8 +37,9 @@ qt6_add_resources(QVibra "resources"
 
 target_link_libraries(QVibra
     PRIVATE
-        Qt::Core
-        Qt::Widgets
+        Qt6::Core
+        Qt6::Widgets
+        Qt6::Multimedia
 )
 
 include(GNUInstallDirs)

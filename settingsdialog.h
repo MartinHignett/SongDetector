@@ -1,7 +1,9 @@
 #ifndef SETTINGSDIALOG_H
 #define SETTINGSDIALOG_H
 
+#include <QAudioDevice>
 #include <QDialog>
+#include <QMediaDevices>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class SettingsDialog; }
@@ -17,5 +19,12 @@ public:
 
 private:
     Ui::SettingsDialog *ui;
+    std::shared_ptr<QMediaDevices> m_mediaDevices;
+
+    void getAudioDevices();
+
+private slots:
+    void setAudioDevices();
 };
+
 #endif // SETTINGSDIALOG_H
