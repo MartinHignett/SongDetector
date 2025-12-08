@@ -8,6 +8,8 @@
 #include <QTranslator>
 #include <qcoreapplication.h>
 
+#include "audiostream.h"
+
 int main(int argc, char *argv[])
 {
     // Create an Qt application...
@@ -25,10 +27,12 @@ int main(int argc, char *argv[])
         }
     }
 
+    const auto audioStream = new  AudioStream(&app);
+
     // Setup system tray menu...
     QMenu menu;
-    menu.addAction(QCoreApplication::translate("ContextMenu", "Settings..."), []{
-        auto settings = new SettingsDialog();
+    menu.addAction(QCoreApplication::translate("ContextMenu", "Settings..."), [audioStream]{
+        auto settings = new SettingsDialog(audioStream);
         settings->show();
     });
     menu.addAction(QCoreApplication::translate("ContextMenu", "Quit"), &app, &QApplication::quit);

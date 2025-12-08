@@ -19,6 +19,8 @@ qt_standard_project_setup()
 
 qt_add_executable(QVibra
     WIN32 MACOSX_BUNDLE
+    audiostream.cpp
+    audiostream.h
     main.cpp
     settingsdialog.cpp
     settingsdialog.h
