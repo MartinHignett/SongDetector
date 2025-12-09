@@ -4,6 +4,7 @@
 #include <QAudioDevice>
 #include <QDialog>
 #include <QMediaDevices>
+#include <QSettings>
 
 #include "audiostream.h"
 
@@ -21,9 +22,11 @@ public:
 
 private:
     Ui::SettingsDialog  *ui;
-    AudioStream *m_audioStream;
+    AudioStream         *m_audioStream;
+    QSettings           *m_settings;
 
     void updateAudioDevices();
+    void onDeviceChanged();
 
 // private slots:
 //     void getAudioDevices();

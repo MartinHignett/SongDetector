@@ -5,6 +5,7 @@
 #include <QAudioDevice>
 #include <QMediaDevices>
 #include <QObject>
+#include <QSettings>
 #include <qaudiodevice.h>
 #include <qmediadevices.h>
 #include <qobject.h>
@@ -22,6 +23,7 @@ class AudioStream : public QObject {
         QMediaDevices       *m_mediaDevices;
         QList<QAudioDevice> m_audioDevices;
         QAudioDevice        m_currentAudioDevice;
+        QSettings           *m_settings;
 
     public slots:
         void refreshAudioDevices();

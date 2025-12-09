@@ -4,6 +4,7 @@
 #include <QIcon>
 #include <QLocale>
 #include <QMenu>
+#include <QSettings>
 #include <QSystemTrayIcon>
 #include <QTranslator>
 #include <qcoreapplication.h>
@@ -15,6 +16,9 @@ int main(int argc, char *argv[])
     // Create an Qt application...
     QApplication app(argc, argv);
     app.setQuitOnLastWindowClosed(false);
+
+    QCoreApplication::setOrganizationName("Martin Hignett");
+    QCoreApplication::setApplicationName("QVibra");
 
     // ...with tranlsation support
     QTranslator translator;
@@ -32,8 +36,8 @@ int main(int argc, char *argv[])
     // Setup system tray menu...
     QMenu menu;
     menu.addAction(QCoreApplication::translate("ContextMenu", "Settings..."), [audioStream]{
-        auto settings = new SettingsDialog(audioStream);
-        settings->show();
+        auto settingsDialog = new SettingsDialog(audioStream);
+        settingsDialog->show();
     });
     menu.addAction(QCoreApplication::translate("ContextMenu", "Quit"), &app, &QApplication::quit);
 
