@@ -16,6 +16,7 @@ SettingsDialog::SettingsDialog(AudioStream *audioStream, QWidget *parent)
     this->updateAudioDevices();
     connect(m_audioStream, &AudioStream::audioDevicesChanged, this, &SettingsDialog::updateAudioDevices);
     connect(this->ui->audioDeviceCombo, &QComboBox::currentIndexChanged, this, &SettingsDialog::onDeviceChanged);
+    connect(this->ui->startButton, &QPushButton::clicked, this, &SettingsDialog::startFingerprint);
 }
 
 SettingsDialog::~SettingsDialog()
@@ -37,4 +38,8 @@ void SettingsDialog::updateAudioDevices(){
 void SettingsDialog::onDeviceChanged() {
     const auto device = this->ui->audioDeviceCombo->currentData().value<QAudioDevice>();
     this->m_audioStream->setCurrentAudioDevice(device);
+}
+
+void SettingsDialog::startFingerprint() {
+    this->m_audioStream->startIdentify();
 }

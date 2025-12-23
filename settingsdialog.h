@@ -28,8 +28,8 @@ private:
     void updateAudioDevices();
     void onDeviceChanged();
 
-// private slots:
-//     void getAudioDevices();
+private slots:
+     void startFingerprint();
 };
 
 #endif // SETTINGSDIALOG_H

@@ -6,7 +6,7 @@
   {
     "label": "Debug native binary",
     "build": {
-      "command": "ninja",
+      "command": "make",
       "args": [
         "-j8"
       ],

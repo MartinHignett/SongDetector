@@ -14,6 +14,8 @@ set(QT_MINIMUM_VERSION "6.2.0")
 set(KF_MIN_VERSION "6.0.0")
 
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets LinguistTools Multimedia)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(PIPEWIRE REQUIRED IMPORTED_TARGET libpipewire-0.3)
 
 qt_standard_project_setup()
 
@@ -37,11 +39,31 @@ qt6_add_resources(QVibra "resources"
     FILES resources/app.ico
 )
 
+# Find Vibra library and headers
+find_path(VIBRA_INCLUDE_DIR
+    NAMES vibra.h
+    PATHS /usr/local/include
+)
+
+find_library(VIBRA_LIBRARY
+    NAMES vibra
+    PATHS /usr/local/lib
+    REQUIRED
+)
+
+add_library(Vibra SHARED IMPORTED)
+set_target_properties(Vibra
+    PROPERTIES
+        IMPORTED_LOCATION ${VIBRA_LIBRARY}
+)
+
 target_link_libraries(QVibra
     PRIVATE
         Qt6::Core
         Qt6::Widgets
         Qt6::Multimedia
+        PkgConfig::PIPEWIRE
+        Vibra
 )
 
 include(GNUInstallDirs)
