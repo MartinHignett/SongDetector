@@ -1,17 +1,28 @@
 #include <QApplication>
 #include <QAudioDevice>
+#include <QJsonDocument>
 #include <QMediaDevices>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QRestAccessManager>
 #include <QTimer>
 #include <QObject>
 #include <QVariant>
 #include <pipewire/keys.h>
 #include <pipewire/stream.h>
 #include <pipewire/thread-loop.h>
+#include <qcoreapplication.h>
 #include <qlogging.h>
 #include <qnamespace.h>
+#include <qnetworkaccessmanager.h>
+#include <qnetworkrequest.h>
+#include <qobject.h>
 #include <qobjectdefs.h>
+#include <qrestaccessmanager.h>
 #include <qstyle.h>
+#include <quuid.h>
 #include <spa/utils/type.h>
+#include <stdlib.h>
 
 extern "C" {
     #include <pipewire/loop.h>
@@ -24,8 +35,11 @@ extern "C" {
 #include <vibra.h>
 
 #include "audiostream.h"
+#include "shazam_body.h"
 
 #define SELECTED_DEVICE_SETTING "deviceId"
+#define SHAZAM_URL QStringLiteral("https://amp.shazam.com/discovery/v5/en/US/android/-/tag/") //[UUID]/[UUID]
+#define SHAZAM_QUERY_PARAMS QStringLiteral("?sync=true&webv3=true&sampling=true&connected=&shazamapiversion=v3&sharehub=true&video=v3")
 
 AudioStream::AudioStream(QApplication *parent)
     : QObject(parent),
@@ -36,6 +50,8 @@ AudioStream::AudioStream(QApplication *parent)
     m_settings = new QSettings(this);
     m_mediaDevices = new QMediaDevices(this);
     m_audioDevices = QMediaDevices::audioOutputs();
+    // m_networkAccessManager = new QNetworkAccessManager(this);
+    // m_restAccessManager = new QRestAccessManager(m_networkAccessManager, this);
 
     if (m_settings->contains(SELECTED_DEVICE_SETTING)) {
         const auto deviceId = m_settings->value(SELECTED_DEVICE_SETTING);
@@ -242,7 +258,6 @@ void AudioStream::negotiateFormat(const struct spa_pod* param) {
     qDebug() << "Accepted format and updated params";
 }
 
-
 /*
  * Assumes that m_loop and m_stream are valid
  */
@@ -258,15 +273,14 @@ void AudioStream::connectToStream() {
         return;
     }
 
-    // Vibra needs 16bit 44KHz stereo data
     uint8_t buffer[1024];
     struct spa_pod_builder b = SPA_POD_BUILDER_INIT(buffer, sizeof(buffer));
     const struct spa_pod *params[1];
 
     struct spa_audio_info_raw audio_info = {};
-    audio_info.format = SPA_AUDIO_FORMAT_S16_LE;   // 16-bit signed little endian
-    audio_info.rate = m_sampleRate;                // 44.1 kHz
-    audio_info.channels = m_channels;           // Stereo
+    audio_info.format = SPA_AUDIO_FORMAT_S16_LE;    // 16-bit signed little endian
+    audio_info.rate = m_sampleRate;
+    audio_info.channels = m_channels;
 
     params[0] = spa_format_audio_raw_build(&b, SPA_PARAM_EnumFormat, &audio_info);
 
@@ -301,6 +315,7 @@ void AudioStream::processAudio(void *userData) {
     }
 
     qDebug() << "Buffer size is :" << m_audioBuffer.size();
+    qDebug() << "Bytes: " << m_audioBuffer.toHex();
 
     // Use Vibra fingerprinting
     qDebug() << "Invoking Vibra...";
@@ -312,14 +327,75 @@ void AudioStream::processAudio(void *userData) {
         m_channels
     );
 
-    const char* uri = vibra_get_uri_from_fingerprint(fp);
+    auto uri = QString::fromUtf8(vibra_get_uri_from_fingerprint(fp));
+
     qDebug() << "Found URI:" << uri;
+
+    QMetaObject::invokeMethod(this, [this, uri]() {
+        shazamLookup(uri);
+    }, Qt::QueuedConnection);
 
     // Stop after identification
     QMetaObject::invokeMethod(this, "stopIdentify", Qt::QueuedConnection);
 
     pw_stream_queue_buffer(m_stream, buf);
 }
+
+void AudioStream::shazamLookup(const QString& uri) {
+    const auto networkAccessManager = new QNetworkAccessManager(this);
+    const auto restAccessManager = new QRestAccessManager(networkAccessManager, this);
+
+    ShazamBody shazamBody(uri, m_bufferLengthInSeconds);
+    const auto jsonBody = shazamBody.toJsonDocument();
+
+    const QString url =
+        SHAZAM_URL +
+        QUuid::createUuid().toString(QUuid::WithoutBraces) +
+        "/" +
+        QUuid::createUuid().toString(QUuid::WithoutBraces) +
+        SHAZAM_QUERY_PARAMS;
+
+    qDebug() << "URL: " << url;
+    qDebug() << "Json Body: " << jsonBody;
+
+    auto request = QNetworkRequest(QUrl(url));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    request.setHeader(QNetworkRequest::UserAgentHeader, "Dalvik/2.1.0 (Linux; U; Android 6.0.1; SM-G920F Build/MMB29K)");
+    // request.setRawHeader("Accept-Encoding", "gzip, deflate, br");
+    request.setRawHeader("Accept", "*/*");
+    request.setRawHeader("Connection", "keep-alive");
+    request.setRawHeader("Content-Language", "en_US");
+
+    const auto response = restAccessManager->post(request, jsonBody);
+    //QObject::connect(response, &QNetworkReply::finished, this, &AudioStream::shazamLookupFinished);
+    QObject::connect(response, &QNetworkReply::finished, this, [response, restAccessManager, networkAccessManager]() {
+        qDebug() << "Shazam finished!";
+
+        if (response) {
+            QRestReply restResponse(response);
+            qDebug() << restResponse.readBody();
+            response->deleteLater();
+        }
+
+        restAccessManager->deleteLater();
+        networkAccessManager->deleteLater();
+    });
+}
+
+void AudioStream::shazamLookupFinished() {
+    qDebug() << "Shazam finished!";
+
+    auto reply = qobject_cast<QNetworkReply*>(sender());
+
+    if (reply) {
+        QRestReply response(reply);
+        qDebug() << "HTTP Status: " << response.httpStatus();
+        qDebug() << "HTTP: " << response.errorString();
+        qDebug() << "Shazam response: " << response.readBody();
+        reply->deleteLater();
+    }
+}
+
 
 /******************************
  * PipeWire event handlers
