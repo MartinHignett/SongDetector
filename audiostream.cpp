@@ -21,6 +21,7 @@
 #include <qrestaccessmanager.h>
 #include <qstyle.h>
 #include <quuid.h>
+#include <spa/param/param.h>
 #include <spa/utils/type.h>
 #include <stdlib.h>
 
@@ -38,7 +39,7 @@ extern "C" {
 #include "shazam_body.h"
 
 #define SELECTED_DEVICE_SETTING "deviceId"
-#define SHAZAM_URL QStringLiteral("https://amp.shazam.com/discovery/v5/en/US/android/-/tag/") //[UUID]/[UUID]
+#define SHAZAM_URL QStringLiteral("https://amp.shazam.com/discovery/v5/en/US/android/-/tag/")
 #define SHAZAM_QUERY_PARAMS QStringLiteral("?sync=true&webv3=true&sampling=true&connected=&shazamapiversion=v3&sharehub=true&video=v3")
 
 AudioStream::AudioStream(QApplication *parent)
@@ -50,8 +51,6 @@ AudioStream::AudioStream(QApplication *parent)
     m_settings = new QSettings(this);
     m_mediaDevices = new QMediaDevices(this);
     m_audioDevices = QMediaDevices::audioOutputs();
-    // m_networkAccessManager = new QNetworkAccessManager(this);
-    // m_restAccessManager = new QRestAccessManager(m_networkAccessManager, this);
 
     if (m_settings->contains(SELECTED_DEVICE_SETTING)) {
         const auto deviceId = m_settings->value(SELECTED_DEVICE_SETTING);
@@ -81,6 +80,8 @@ AudioStream::~AudioStream() {
     if (m_loop != nullptr) {
         pw_thread_loop_destroy(m_loop);
     }
+
+    pw_deinit();
 }
 
 /******************************
@@ -125,6 +126,8 @@ QList<QAudioDevice> AudioStream::getAudioDevices() {
      // Disconnect any existing connections
      stopIdentify();
 
+     m_isCapturing = true;
+
      // There must be a better way than waiting 500ms...
      QTimer::singleShot(500, this, [this] {
          this->connectToStream();
@@ -133,6 +136,8 @@ QList<QAudioDevice> AudioStream::getAudioDevices() {
 
  void AudioStream::stopIdentify() {
      qDebug() << "Stopping identify";
+
+     m_isCapturing = false;
 
      if (!m_stream) {
          return;
@@ -155,8 +160,6 @@ QList<QAudioDevice> AudioStream::getAudioDevices() {
  ******************************/
 
 void AudioStream::initializePipewire() {
-    qDebug() << "Initializing PipeWire";
-
     pw_init(nullptr, nullptr);
 
     m_loop = pw_thread_loop_new("QVibra", nullptr);
@@ -164,7 +167,6 @@ void AudioStream::initializePipewire() {
     m_core = pw_context_connect(m_context, nullptr, 0);
 
     pw_thread_loop_start(m_loop);
-    qDebug() << "Thread loop started";
 
     pw_thread_loop_lock(m_loop);
 
@@ -172,23 +174,26 @@ void AudioStream::initializePipewire() {
         PW_KEY_MEDIA_TYPE, "Audio",
         PW_KEY_MEDIA_CATEGORY, "Capture",
         PW_KEY_MEDIA_ROLE, "Music",
-        // TODO: Make this the device selected in the settings page
-        PW_KEY_NODE_TARGET, "@DEFAULT_AUDIO_SINK@.monitor",
+        // Hard code to Bluez monitor for now...
+        // PW_KEY_NODE_TARGET, "bluez_output.AC_80_0A_2B_EC_71.1.monitor"
+        PW_KEY_STREAM_CAPTURE_SINK, "true",
         PW_KEY_APP_NAME, "QVibra",
-        // Add this to mark as a monitor stream
-        PW_KEY_STREAM_MONITOR, "true",
-        nullptr);
+        NULL);
+
 
     static const pw_stream_events stream_events = {
         .version = PW_VERSION_STREAM_EVENTS,
-        // This is only needed for debugging
-        // .state_changed = AudioStream::onStateChanged,
+        .state_changed = AudioStream::onStateChanged,
         .param_changed = AudioStream::onParamChanged,
         .process = AudioStream::onProcessAudio
     };
 
-    qDebug() << "Creating stream with pw_stream_new...";
-    m_stream = pw_stream_new(m_core, "QVibra", properties);
+    m_stream = pw_stream_new_simple(
+        pw_thread_loop_get_loop(m_loop),
+        "QVibra",
+        properties,
+        &stream_events,
+        (void *)this);
 
     if (!m_stream) {
         qDebug() << "Failed to create stream";
@@ -196,32 +201,68 @@ void AudioStream::initializePipewire() {
         return;
     }
 
-    // Add the event listener separately
-    pw_stream_add_listener(m_stream, &m_stream_listener, &stream_events, this);
-
-    qDebug() << "Stream created successfully";
     pw_thread_loop_unlock(m_loop);
 }
 
 void AudioStream::paramChanged(void* userData, uint32_t id, const struct spa_pod* param) {
     if (param == nullptr) {
-        qDebug() << "param is null - ignoring";
         return;
     }
 
     // Handle different parameter types
-    if (id == SPA_PARAM_EnumFormat) {
-        negotiateFormat(param);
-    }
-    else {
-        qDebug() << "Unknown parameter id:" << id << "- ignoring";
+    switch(id) {
+        case SPA_PARAM_EnumFormat:
+            negotiateFormat(param);
+            break;
+        case SPA_PARAM_Format:
+            handleFinalFormat(param);
+            break;
+        default:
+            qDebug() << "Unknown parameter id:" << id << "- ignoring";
     }
 }
 
-void AudioStream::negotiateFormat(const struct spa_pod* param) {
-    qDebug() << "Got EnumFormat - parsing and responding";
+void AudioStream::handleFinalFormat(const struct spa_pod* param) {
+    // Parse the final format
+    struct spa_audio_info format;
+    if (spa_format_parse(param, &format.media_type, &format.media_subtype) < 0) {
+        qDebug() << "Failed to parse final format";
+        return;
+    }
 
-    // Parse the offered format
+    if (format.media_type != SPA_MEDIA_TYPE_audio ||
+        format.media_subtype != SPA_MEDIA_SUBTYPE_raw) {
+        qDebug() << "Final format is not audio/raw";
+        return;
+    }
+
+    if (spa_format_audio_raw_parse(param, &format.info.raw) < 0) {
+        qDebug() << "Failed to parse final audio format details";
+        return;
+    }
+
+    // For debuging purposes
+    const char* format_name = "UNKNOWN";
+    if (format.info.raw.format == SPA_AUDIO_FORMAT_S16_LE)
+        format_name = "SPA_AUDIO_FORMAT_S16_LE (signed 16-bit LE)";
+    else if (format.info.raw.format == SPA_AUDIO_FORMAT_U16_LE)
+        format_name = "SPA_AUDIO_FORMAT_U16_LE (unsigned 16-bit LE)";
+    else if (format.info.raw.format == SPA_AUDIO_FORMAT_F32_LE)
+        format_name = "SPA_AUDIO_FORMAT_F32_LE (float 32-bit LE)";
+    else if (format.info.raw.format == SPA_AUDIO_FORMAT_F32)
+        format_name = "SPA_AUDIO_FORMAT_F32";
+
+    // Store the final format info
+    m_sampleRate = format.info.raw.rate;
+    m_channels = format.info.raw.channels;
+
+    // Re-calculate the minimum buffer size
+    m_minBufferSize = m_sampleRate * m_channels * m_bytesPerSample * m_bufferLengthInSeconds;
+
+    qDebug() << "Final stream parameters - Format:" << format_name << "Rate:" << m_sampleRate << "Channels:" << m_channels;
+}
+
+void AudioStream::negotiateFormat(const struct spa_pod* param) {
     struct spa_audio_info format;
     if (spa_format_parse(param, &format.media_type, &format.media_subtype) < 0) {
         qDebug() << "Failed to parse media format";
@@ -239,7 +280,7 @@ void AudioStream::negotiateFormat(const struct spa_pod* param) {
         return;
     }
 
-    // Accept the offered format by responding with SPA_PARAM_Format
+    // DON'T modify the format, just accept what's offered
     uint8_t buffer[1024];
     struct spa_pod_builder b = SPA_POD_BUILDER_INIT(buffer, sizeof(buffer));
     const struct spa_pod *params[1];
@@ -253,8 +294,9 @@ void AudioStream::negotiateFormat(const struct spa_pod* param) {
     m_channels = format.info.raw.channels;
 
     // Re-calculate the minimum buffer size
-    m_minBufferSize = m_sampleRate * m_channels * m_bufferLengthInSeconds;
+    m_minBufferSize = m_sampleRate * m_channels * m_bytesPerSample * m_bufferLengthInSeconds;
 
+    qDebug() << "Final negotiated - Rate:" << m_sampleRate << "Channels:" << m_channels;
     qDebug() << "Accepted format and updated params";
 }
 
@@ -265,7 +307,6 @@ void AudioStream::connectToStream() {
     pw_thread_loop_lock(m_loop);
 
     enum pw_stream_state current_state = pw_stream_get_state(m_stream, nullptr);
-    qDebug() << "Current stream state before connect:" << current_state;
 
     if (current_state != PW_STREAM_STATE_UNCONNECTED) {
         qDebug() << "Stream not in unconnected state, aborting";
@@ -278,16 +319,14 @@ void AudioStream::connectToStream() {
     const struct spa_pod *params[1];
 
     struct spa_audio_info_raw audio_info = {};
-    audio_info.format = SPA_AUDIO_FORMAT_S16_LE;    // 16-bit signed little endian
-    audio_info.rate = m_sampleRate;
-    audio_info.channels = m_channels;
+    audio_info.format = SPA_AUDIO_FORMAT_F32;    // 32-bit float
 
     params[0] = spa_format_audio_raw_build(&b, SPA_PARAM_EnumFormat, &audio_info);
 
     int result = pw_stream_connect(m_stream,
         PW_DIRECTION_INPUT,
         PW_ID_ANY,
-        (pw_stream_flags)(PW_STREAM_FLAG_AUTOCONNECT | PW_STREAM_FLAG_MAP_BUFFERS),
+        (pw_stream_flags)(PW_STREAM_FLAG_AUTOCONNECT | PW_STREAM_FLAG_RT_PROCESS),
         params, 1);
 
     if (result < 0) {
@@ -297,46 +336,130 @@ void AudioStream::connectToStream() {
     pw_thread_loop_unlock(m_loop);
 }
 
+void AudioStream::forceConnection() {
+    QTimer::singleShot(2000, this, [this]() {
+        qDebug() << "Attempting manual connection...";
+
+        // Connect Bluetooth headphone monitor to QVibra input
+        int result1 = system("pw-link \"Martin's Headphones:monitor_FL\" \"QVibra:input_MONO\" 2>/dev/null");
+        // int result2 = system("pw-link \"Martin's Headphones:monitor_FR\" \"QVibra:input_MONO\" 2>/dev/null");
+
+        qDebug() << "Connection results - FL:" << result1; // << "FR:" << result2;
+
+        // Check the final connection
+        system("pw-link -l | grep QVibra");
+    });
+}
+
+void AudioStream::activateStreamWhenReady() {
+    if (!m_stream) return;
+
+    pw_thread_loop_lock(m_loop);
+
+    enum pw_stream_state state = pw_stream_get_state(m_stream, nullptr);
+    qDebug() << "Attempting to activate stream in state:" << state;
+
+    if (state == PW_STREAM_STATE_PAUSED) {
+        // Add debug to see what we're actually targeting
+        const struct pw_properties* props = pw_stream_get_properties(m_stream);
+        if (props) {
+            const char* target = pw_properties_get(props, PW_KEY_NODE_TARGET);
+            qDebug() << "Stream target:" << (target ? target : "none");
+        }
+
+        bool result = pw_stream_set_active(m_stream, true);
+        qDebug() << "pw_stream_set_active returned:" << result;
+
+        if (!result) {
+            qDebug() << "Activation failed, will retry in 100ms...";
+            pw_thread_loop_unlock(m_loop);
+            QTimer::singleShot(100, this, &AudioStream::activateStreamWhenReady);
+            return;
+        }
+    }
+
+    pw_thread_loop_unlock(m_loop);
+}
+
+// void AudioStream::createLinks() {
+//     if (m_monitor_fl_port_id == 0 || m_input_port_id == 0) {
+//         qDebug() << "Not all ports found yet. FL:" << m_monitor_fl_port_id << "Input:" << m_input_port_id;
+//         return;
+//     }
+
+//     qDebug() << "Creating link from Bluetooth monitor FL port" << m_monitor_fl_port_id << "to QVibra input" << m_input_port_id;
+
+//     pw_thread_loop_lock(m_loop);
+
+//     // Create link from monitor FL to input
+//     struct pw_properties* props = pw_properties_new(
+//         PW_KEY_LINK_OUTPUT_PORT, std::to_string(m_monitor_fl_port_id).c_str(),
+//         PW_KEY_LINK_INPUT_PORT, std::to_string(m_input_port_id).c_str(),
+//         nullptr);
+
+//     auto link_proxy = pw_core_create_object(m_core,
+//         "link-factory",
+//         PW_TYPE_INTERFACE_Link,
+//         PW_VERSION_LINK,
+//         &props->dict, 0);
+
+//     pw_properties_free(props);
+
+//     if (link_proxy) {
+//         qDebug() << "Link created successfully";
+//     } else {
+//         qDebug() << "Failed to create link";
+//     }
+
+//     pw_thread_loop_unlock(m_loop);
+// }
+
 void AudioStream::processAudio(void *userData) {
+    static int callCount = 0;
+
     pw_buffer* buf = pw_stream_dequeue_buffer(m_stream);
-    if (!buf || !buf->buffer->datas[0].data) {
-        if (buf) pw_stream_queue_buffer(m_stream, buf);
+    if (!buf) {
+        qDebug() << "No buffer available";
         return;
     }
 
-    // Get raw PCM data
-    const char* raw_pcm = static_cast<const char*>(buf->buffer->datas[0].data);
-    int pcm_data_size = buf->buffer->datas[0].chunk->size;
-
-    m_audioBuffer.append(raw_pcm, pcm_data_size);
-    if (m_audioBuffer.size() < m_minBufferSize) {
+    if (!buf->buffer->datas[0].data) {
+        qDebug() << "Buffer data is null";
         pw_stream_queue_buffer(m_stream, buf);
         return;
     }
 
-    qDebug() << "Buffer size is :" << m_audioBuffer.size();
-    qDebug() << "Bytes: " << m_audioBuffer.toHex();
+    // Get the PCM data from the buf
+    const char* raw_pcm = static_cast<const char*>(buf->buffer->datas[0].data);
+    int pcm_data_size = buf->buffer->datas[0].chunk->size;
 
-    // Use Vibra fingerprinting
-    qDebug() << "Invoking Vibra...";
-    const auto fp = vibra_get_fingerprint_from_signed_pcm(
-        m_audioBuffer.data(),
-        m_audioBuffer.size(),
-        m_sampleRate,
-        m_sampleWidth * 8,
-        m_channels
-    );
+    if (m_isCapturing.load()) {
+        m_audioBuffer.append(raw_pcm, pcm_data_size);
+        if (m_audioBuffer.size() < m_minBufferSize) {
+            pw_stream_queue_buffer(m_stream, buf);
+            return;
+        }
 
-    auto uri = QString::fromUtf8(vibra_get_uri_from_fingerprint(fp));
+        m_isCapturing = false;
 
-    qDebug() << "Found URI:" << uri;
+        // Use Vibra fingerprinting
+        const auto fp = vibra_get_fingerprint_from_signed_pcm(
+            m_audioBuffer.data(),
+            m_audioBuffer.size(),
+            m_sampleRate,
+            m_bytesPerSample * 8,
+            m_channels
+        );
 
-    QMetaObject::invokeMethod(this, [this, uri]() {
-        shazamLookup(uri);
-    }, Qt::QueuedConnection);
+        auto uri = QString::fromUtf8(vibra_get_uri_from_fingerprint(fp));
 
-    // Stop after identification
-    QMetaObject::invokeMethod(this, "stopIdentify", Qt::QueuedConnection);
+        QMetaObject::invokeMethod(this, [this, uri]() {
+            shazamLookup(uri);
+        }, Qt::QueuedConnection);
+
+        // Stop after identification
+        QMetaObject::invokeMethod(this, "stopIdentify", Qt::QueuedConnection);
+    }
 
     pw_stream_queue_buffer(m_stream, buf);
 }
@@ -355,19 +478,14 @@ void AudioStream::shazamLookup(const QString& uri) {
         QUuid::createUuid().toString(QUuid::WithoutBraces) +
         SHAZAM_QUERY_PARAMS;
 
-    qDebug() << "URL: " << url;
-    qDebug() << "Json Body: " << jsonBody;
-
     auto request = QNetworkRequest(QUrl(url));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     request.setHeader(QNetworkRequest::UserAgentHeader, "Dalvik/2.1.0 (Linux; U; Android 6.0.1; SM-G920F Build/MMB29K)");
-    // request.setRawHeader("Accept-Encoding", "gzip, deflate, br");
     request.setRawHeader("Accept", "*/*");
     request.setRawHeader("Connection", "keep-alive");
     request.setRawHeader("Content-Language", "en_US");
 
     const auto response = restAccessManager->post(request, jsonBody);
-    //QObject::connect(response, &QNetworkReply::finished, this, &AudioStream::shazamLookupFinished);
     QObject::connect(response, &QNetworkReply::finished, this, [response, restAccessManager, networkAccessManager]() {
         qDebug() << "Shazam finished!";
 
@@ -396,7 +514,6 @@ void AudioStream::shazamLookupFinished() {
     }
 }
 
-
 /******************************
  * PipeWire event handlers
  ******************************/
@@ -416,12 +533,21 @@ void AudioStream::onProcessAudio(void* userData) {
 void AudioStream::onStateChanged(void* userData, enum pw_stream_state old_state, enum pw_stream_state state, const char* error) {
     if (error) {
         qDebug() << "Stream state error:" << error;
+        return;
     }
 
-    // If we reach PAUSED state, try to activate the stream
     if (state == PW_STREAM_STATE_PAUSED) {
         auto* self = static_cast<AudioStream*>(userData);
-        pw_stream_set_active(self->m_stream, true);
-        qDebug() << "Stream reached PAUSED, activating...";
+        qDebug() << "Stream reached PAUSED, scheduling activation...";
+        QMetaObject::invokeMethod(self, [self]() {
+            self->activateStreamWhenReady();
+        }, Qt::QueuedConnection);
+    }
+
+    if (state == PW_STREAM_STATE_STREAMING) {
+        auto* self = static_cast<AudioStream*>(userData);
+        QMetaObject::invokeMethod(self, [self]() {
+            self->forceConnection();
+        }, Qt::QueuedConnection);
     }
 }

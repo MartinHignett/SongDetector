@@ -33,6 +33,7 @@ class AudioStream : public QObject {
         void startIdentify();
         void stopIdentify();
         void shazamLookupFinished();
+        void activateStreamWhenReady();
 
     signals:
         void audioDevicesChanged(QList<QAudioDevice> *devices);
@@ -43,22 +44,36 @@ class AudioStream : public QObject {
         QList<QAudioDevice> m_audioDevices;
         QAudioDevice        m_currentAudioDevice;
         QSettings*          m_settings;
-        QByteArray          m_audioBuffer;  // Add this to accumulate audio
+        // Stores the captued audio in PCM format
+        QByteArray          m_audioBuffer;
+        // Makes sure that we don't keep modifying m_audioBuffer
+        // once we have enough data.
+        std::atomic<bool>   m_isCapturing{true};
 
+        /* PipeWire properties */
         pw_thread_loop*     m_loop = nullptr;
         pw_context*         m_context = nullptr;
         pw_properties*      m_properties = nullptr;
         pw_core*            m_core = nullptr;
         struct spa_hook     m_stream_listener = {};
-        int                 m_sampleRate  = 44100;  // Sample rate
-        int                 m_channels    = 2;      // Number of channels
-        int                 m_sampleWidth = 16;     // Bits per sample
-        int                 m_bufferLengthInSeconds = 10;
-        int                 m_minBufferSize = m_sampleRate * m_channels * (m_sampleWidth/8) * m_bufferLengthInSeconds;
+        struct pw_registry* m_registry = nullptr;
+        struct spa_hook     m_registry_listener;
+        uint32_t            m_monitor_fl_port_id = 0;
+        uint32_t            m_monitor_fr_port_id = 0;
+        uint32_t            m_input_port_id = 0;
 
+        int                 m_sampleRate  = 44100;  // Sample rate
+        int                 m_channels    = 1;      // Number of channels
+        int                 m_bytesPerSample = 4;   // Bytes per sample
+        int                 m_bufferLengthInSeconds = 10;
+        int                 m_minBufferSize = m_sampleRate * m_channels * m_bytesPerSample * m_bufferLengthInSeconds;
+
+        void                createLinks();
+        void                forceConnection();
         void                initializePipewire();
         void                connectToStream();
         void                negotiateFormat(const struct spa_pod* param);
+        void                handleFinalFormat(const struct spa_pod* param);
 
         /*
          * Shazam Methods
@@ -71,12 +86,6 @@ class AudioStream : public QObject {
          */
         static void         onProcessAudio(void *userData);
         static void         onParamChanged(void* userData, uint32_t id, const struct spa_pod* param);
-
-        /*
-         * Shazam REST API
-         */
-         // QNetworkAccessManager*  m_networkAccessManager;
-         // QRestAccessManager*     m_restAccessManager;
 
         // This is for debugging only
         static void         onStateChanged(void* userData, enum pw_stream_state old_state, enum pw_stream_state state, const char* error);
