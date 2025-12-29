@@ -7,13 +7,11 @@
     "label": "Debug native binary",
     "build": {
       "command": "make",
-      "args": [
-        "-j8"
-      ],
-      "cwd": "$ZED_WORKTREE_ROOT/build/Desktop-Debug"
+      "args": ["-j8"],
+      "cwd": "$ZED_WORKTREE_ROOT/build/debug"
     },
     "request": "launch",
     "adapter": "GDB",
-    "program": "build/Desktop-Debug/QVibra"
+    "program": "build/debug/QVibra"
   }
 ]

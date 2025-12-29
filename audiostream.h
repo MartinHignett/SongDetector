@@ -88,7 +88,7 @@ class AudioStream : public QObject {
         static void         onParamChanged(void* userData, uint32_t id, const struct spa_pod* param);
 
         // This is for debugging only
-        static void         onStateChanged(void* userData, enum pw_stream_state old_state, enum pw_stream_state state, const char* error);
+        // static void         onStateChanged(void* userData, enum pw_stream_state old_state, enum pw_stream_state state, const char* error);
 };
 
 #endif // AUDIOSTREAM_H

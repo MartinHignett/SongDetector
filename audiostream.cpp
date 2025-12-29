@@ -130,6 +130,7 @@ QList<QAudioDevice> AudioStream::getAudioDevices() {
 
      // There must be a better way than waiting 500ms...
      QTimer::singleShot(500, this, [this] {
+         qDebug() << "From startIdentify()";
          this->connectToStream();
      });
  }
@@ -167,7 +168,6 @@ void AudioStream::initializePipewire() {
     m_core = pw_context_connect(m_context, nullptr, 0);
 
     pw_thread_loop_start(m_loop);
-
     pw_thread_loop_lock(m_loop);
 
     const auto properties = pw_properties_new(
@@ -183,7 +183,7 @@ void AudioStream::initializePipewire() {
 
     static const pw_stream_events stream_events = {
         .version = PW_VERSION_STREAM_EVENTS,
-        .state_changed = AudioStream::onStateChanged,
+        // .state_changed = AudioStream::onStateChanged,
         .param_changed = AudioStream::onParamChanged,
         .process = AudioStream::onProcessAudio
     };
@@ -331,24 +331,11 @@ void AudioStream::connectToStream() {
 
     if (result < 0) {
         qDebug() << "Error connecting to stream: " << result;
+    } else {
+        qDebug() << "Connected to stream";
     }
 
     pw_thread_loop_unlock(m_loop);
-}
-
-void AudioStream::forceConnection() {
-    QTimer::singleShot(2000, this, [this]() {
-        qDebug() << "Attempting manual connection...";
-
-        // Connect Bluetooth headphone monitor to QVibra input
-        int result1 = system("pw-link \"Martin's Headphones:monitor_FL\" \"QVibra:input_MONO\" 2>/dev/null");
-        // int result2 = system("pw-link \"Martin's Headphones:monitor_FR\" \"QVibra:input_MONO\" 2>/dev/null");
-
-        qDebug() << "Connection results - FL:" << result1; // << "FR:" << result2;
-
-        // Check the final connection
-        system("pw-link -l | grep QVibra");
-    });
 }
 
 void AudioStream::activateStreamWhenReady() {
@@ -357,7 +344,6 @@ void AudioStream::activateStreamWhenReady() {
     pw_thread_loop_lock(m_loop);
 
     enum pw_stream_state state = pw_stream_get_state(m_stream, nullptr);
-    qDebug() << "Attempting to activate stream in state:" << state;
 
     if (state == PW_STREAM_STATE_PAUSED) {
         // Add debug to see what we're actually targeting
@@ -368,7 +354,6 @@ void AudioStream::activateStreamWhenReady() {
         }
 
         bool result = pw_stream_set_active(m_stream, true);
-        qDebug() << "pw_stream_set_active returned:" << result;
 
         if (!result) {
             qDebug() << "Activation failed, will retry in 100ms...";
@@ -380,39 +365,6 @@ void AudioStream::activateStreamWhenReady() {
 
     pw_thread_loop_unlock(m_loop);
 }
-
-// void AudioStream::createLinks() {
-//     if (m_monitor_fl_port_id == 0 || m_input_port_id == 0) {
-//         qDebug() << "Not all ports found yet. FL:" << m_monitor_fl_port_id << "Input:" << m_input_port_id;
-//         return;
-//     }
-
-//     qDebug() << "Creating link from Bluetooth monitor FL port" << m_monitor_fl_port_id << "to QVibra input" << m_input_port_id;
-
-//     pw_thread_loop_lock(m_loop);
-
-//     // Create link from monitor FL to input
-//     struct pw_properties* props = pw_properties_new(
-//         PW_KEY_LINK_OUTPUT_PORT, std::to_string(m_monitor_fl_port_id).c_str(),
-//         PW_KEY_LINK_INPUT_PORT, std::to_string(m_input_port_id).c_str(),
-//         nullptr);
-
-//     auto link_proxy = pw_core_create_object(m_core,
-//         "link-factory",
-//         PW_TYPE_INTERFACE_Link,
-//         PW_VERSION_LINK,
-//         &props->dict, 0);
-
-//     pw_properties_free(props);
-
-//     if (link_proxy) {
-//         qDebug() << "Link created successfully";
-//     } else {
-//         qDebug() << "Failed to create link";
-//     }
-
-//     pw_thread_loop_unlock(m_loop);
-// }
 
 void AudioStream::processAudio(void *userData) {
     static int callCount = 0;
@@ -525,29 +477,4 @@ void AudioStream::onParamChanged(void* userData, uint32_t id, const struct spa_p
 void AudioStream::onProcessAudio(void* userData) {
     auto* self = static_cast<AudioStream*>(userData);
     self->processAudio(userData);
-}
-
-/*
- * For debugging only
- */
-void AudioStream::onStateChanged(void* userData, enum pw_stream_state old_state, enum pw_stream_state state, const char* error) {
-    if (error) {
-        qDebug() << "Stream state error:" << error;
-        return;
-    }
-
-    if (state == PW_STREAM_STATE_PAUSED) {
-        auto* self = static_cast<AudioStream*>(userData);
-        qDebug() << "Stream reached PAUSED, scheduling activation...";
-        QMetaObject::invokeMethod(self, [self]() {
-            self->activateStreamWhenReady();
-        }, Qt::QueuedConnection);
-    }
-
-    if (state == PW_STREAM_STATE_STREAMING) {
-        auto* self = static_cast<AudioStream*>(userData);
-        QMetaObject::invokeMethod(self, [self]() {
-            self->forceConnection();
-        }, Qt::QueuedConnection);
-    }
 }
