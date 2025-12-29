@@ -3,14 +3,14 @@
 
 #include <QApplication>
 #include <QAudioDevice>
+#include <QByteArray>
 #include <QMediaDevices>
 #include <QObject>
-#include <QRestAccessManager>
 #include <QRestReply>
 #include <QSettings>
+#include <QString>
+#include <atomic>
 #include <pipewire/pipewire.h>
-#include <qaudiodevice.h>
-#include <qmediadevices.h>
 
 class AudioStream : public QObject {
     Q_OBJECT;

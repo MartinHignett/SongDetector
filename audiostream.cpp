@@ -11,19 +11,14 @@
 #include <pipewire/keys.h>
 #include <pipewire/stream.h>
 #include <pipewire/thread-loop.h>
-#include <qcoreapplication.h>
 #include <qlogging.h>
 #include <qnamespace.h>
-#include <qnetworkaccessmanager.h>
 #include <qnetworkrequest.h>
-#include <qobject.h>
 #include <qobjectdefs.h>
-#include <qrestaccessmanager.h>
-#include <qstyle.h>
 #include <quuid.h>
 #include <spa/param/param.h>
 #include <spa/utils/type.h>
-#include <stdlib.h>
+
 
 extern "C" {
     #include <pipewire/loop.h>
