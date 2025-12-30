@@ -93,10 +93,12 @@ install(TARGETS QVibra
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
-# GitHub has an older version of CMake on ubuntu-latest,
+message(STATUS "Found Qt6: ${Qt6Core_VERSION}")
+
+# GitHub has an older version of Qt on ubuntu-latest,
 # so this workaround allows configuration on
-# cmake 3.x (GitHub) and 4.x (My laptop)
-if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.29")
+# Qt version 6.5 (GitHub) vs 6.5 (My laptop)
+if(Qt6Core_VERSION VERSION_GREATER_EQUAL "6.5")
     # Newer syntax for your Ubuntu 25.10
     qt_generate_deploy_app_script(
         TARGET QVibra
