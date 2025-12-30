@@ -9,8 +9,8 @@ add_definitions(-fexceptions)
 
 # Try to find the best available Qt6 version
 set(QT_PREFERRED_VERSION "6.10.0")
-set(QT_FALLBACK_VERSION "6.4.0")
-set(QT_MINIMUM_VERSION "6.2.0")
+set(QT_FALLBACK_VERSION "6.9.0")
+set(QT_MINIMUM_VERSION "6.7.0")
 set(KF_MIN_VERSION "6.0.0")
 
 find_package(Qt6 6.4 REQUIRED COMPONENTS Core Widgets LinguistTools Multimedia)
