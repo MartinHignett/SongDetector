@@ -28,15 +28,15 @@ jobs:
         run: sudo apt-get update && sudo apt-get install qt6-base-dev qt6-multimedia-dev qt6-tools-dev libpipewire-0.3-dev libcurl4-openssl-dev libfftw3-dev
 
       - name: Configure Vibra CMake
-        run: cd ${{github.workspace}}/vibra && cmake -B build
+        run: cd vibra && cmake -B build
 
       - name: Build Vibra
-        run: cd ${{github.workspace}}/vibra && cmake --build build && cd ../..
+        run: cd vibra && cmake --build build && cd ../..
 
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-        run: ls -al && cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+        run: ls -al vibra/include && ls -al vibra/build/lib && cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
       - name: Build
         # Build your program with the given configuration

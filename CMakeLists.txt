@@ -49,7 +49,7 @@ find_path(VIBRA_INCLUDE_DIR
 
 find_library(VIBRA_LIBRARY
     NAMES vibra
-    PATHS vibra/lib
+    PATHS vibra/build/lib
     REQUIRED
 )
 
