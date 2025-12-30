@@ -23,7 +23,13 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Dependencies
-        run: sudo apt-get update && sudo apt-get install qt6-base-dev qt6-multimedia-dev qt6-tools-dev libpipewire-0.3-dev
+        run: sudo apt-get update && sudo apt-get install qt6-base-dev qt6-multimedia-dev qt6-tools-dev libpipewire-0.3-dev curl-dev libcurl4-dev libfftw3-dev
+
+      - name: Configure Vibra CMake
+        run: cmake -B ${{github.workspace}}/vibra/build
+
+      - name: Build Vibra
+        run: cmake --build ${{github.workspace}}/vibra/build
 
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.

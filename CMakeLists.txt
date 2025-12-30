@@ -44,12 +44,12 @@ qt6_add_resources(QVibra "resources"
 # Find Vibra library and headers
 find_path(VIBRA_INCLUDE_DIR
     NAMES vibra.h
-    PATHS /usr/local/include
+    PATHS vibra/include
 )
 
 find_library(VIBRA_LIBRARY
     NAMES vibra
-    PATHS /usr/local/lib
+    PATHS vibra/lib
     REQUIRED
 )
 
