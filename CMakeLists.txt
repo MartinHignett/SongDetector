@@ -110,7 +110,7 @@ elseif(COMMAND qt_generate_deploy_app_script)
     # Older Qt6 syntax
     qt_generate_deploy_app_script(
         TARGET QVibra
-        FILENAME_VERSION deploy_script
+        FILENAME_VARIABLE deploy_script
         NO_UNSUPPORTED_PLATFORM_ERROR
     )
     install(SCRIPT ${deploy_script})
