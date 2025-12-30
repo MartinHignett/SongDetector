@@ -45,19 +45,29 @@ qt6_add_resources(QVibra "resources"
 find_path(VIBRA_INCLUDE_DIR
     NAMES vibra.h
     PATHS vibra/include
+    REQUIRED
 )
 
 find_library(VIBRA_LIBRARY
-    NAMES vibra
-    PATHS vibra/build/lib
+    NAMES vibra_shared
+    PATHS vibra/build/lib vibra/build
     REQUIRED
 )
+
+if(VIBRA_INCLUDE_DIR AND VIBRA_LIBRARY)
+    message(STATUS "Found Vibra library: ${VIBRA_LIBRARY}")
+    message(STATUS "Found Vibra headers: ${VIBRA_INCLUDE_DIR}")
+else()
+    message(FATAL_ERROR "Could not find Vibra library or headers")
+endif()
 
 add_library(Vibra SHARED IMPORTED)
 set_target_properties(Vibra
     PROPERTIES
         IMPORTED_LOCATION ${VIBRA_LIBRARY}
 )
+
+target_include_directories(QVibra PRIVATE ${VIBRA_INCLUDE_DIR})
 
 target_link_libraries(QVibra
     PRIVATE
