@@ -21,6 +21,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
 
       - name: Install Dependencies
         run: sudo apt-get update && sudo apt-get install qt6-base-dev qt6-multimedia-dev qt6-tools-dev libpipewire-0.3-dev libcurl4-openssl-dev libfftw3-dev
