@@ -1,0 +1,3 @@
+[submodule "vibra"]
+	path = vibra
+	url = https://github.com/BayernMuller/vibra.git
