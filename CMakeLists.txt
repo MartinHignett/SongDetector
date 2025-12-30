@@ -17,6 +17,13 @@ find_package(Qt6 6.4 REQUIRED COMPONENTS Core Widgets LinguistTools Multimedia)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(PIPEWIRE REQUIRED IMPORTED_TARGET libpipewire-0.3)
 
+# Find FFTW3 library (required by vibra)
+find_library(FFTW3_LIBRARY NAMES fftw3)
+find_path(FFTW3_INCLUDE_DIR fftw3.h)
+if(NOT FFTW3_LIBRARY OR NOT FFTW3_INCLUDE_DIR)
+    message(FATAL_ERROR "FFTW3 library not found. Please install libfftw3-dev")
+endif()
+
 qt_standard_project_setup()
 
 qt_add_executable(QVibra
@@ -31,8 +38,7 @@ qt_add_executable(QVibra
     shazam_body.h
 )
 
-qt_add_translations(
-    TARGETS QVibra
+qt_add_translations(QVibra
     TS_FILES translations/QVibra_en_GB.ts
 )
 
@@ -49,7 +55,7 @@ find_path(VIBRA_INCLUDE_DIR
 )
 
 find_library(VIBRA_LIBRARY
-    NAMES vibra_shared
+    NAMES vibra libvibra.so libvibra.a
     PATHS vibra/build/lib vibra/build
     REQUIRED
 )
@@ -76,6 +82,7 @@ target_link_libraries(QVibra
         Qt6::Multimedia
         PkgConfig::PIPEWIRE
         Vibra
+        ${FFTW3_LIBRARY}
 )
 
 include(GNUInstallDirs)
