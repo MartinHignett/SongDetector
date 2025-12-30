@@ -93,9 +93,25 @@ install(TARGETS QVibra
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
-qt_generate_deploy_app_script(
-    TARGET QVibra
-    OUTPUT_SCRIPT deploy_script
-    NO_UNSUPPORTED_PLATFORM_ERROR
-)
-install(SCRIPT ${deploy_script})
+# GitHub has an older version of CMake on ubuntu-latest,
+# so this workaround allows configuration on
+# cmake 3.x (GitHub) and 4.x (My laptop)
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.29")
+    # Newer syntax for your Ubuntu 25.10
+    qt_generate_deploy_app_script(
+        TARGET QVibra
+        OUTPUT_SCRIPT deploy_script
+        NO_UNSUPPORTED_PLATFORM_ERROR
+    )
+    install(SCRIPT ${deploy_script})
+elseif(COMMAND qt_generate_deploy_app_script)
+    # Older Qt6 syntax
+    qt_generate_deploy_app_script(
+        TARGET QVibra
+        FILENAME_VERSION deploy_script
+        NO_UNSUPPORTED_PLATFORM_ERROR
+    )
+    install(SCRIPT ${deploy_script})
+else()
+    message(STATUS "Qt deployment script not available in this Qt version")
+endif()
