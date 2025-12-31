@@ -6,14 +6,14 @@
 #include <qsystemtrayicon.h>
 
 
-#include "qvibra.h"
+#include "song_detector.h"
 #include "audiostream.h"
 #include "settingsdialog.h"
 
-QVibra::QVibra(QApplication* app) {
+SongDetector::SongDetector(QApplication* app) {
     auto audioStream = m_audioStream = new AudioStream(this);
 
-    connect(m_audioStream, &AudioStream::songIdentified, this, &QVibra::onSongIdentified);
+    connect(m_audioStream, &AudioStream::songIdentified, this, &SongDetector::onSongIdentified);
 
     // Setup system tray menu...
     m_menu.addAction(QCoreApplication::translate("ContextMenu", "Settings..."), [audioStream]{
@@ -28,11 +28,11 @@ QVibra::QVibra(QApplication* app) {
     m_trayIcon.show();
 }
 
-void QVibra::onSongIdentified(const Song* song) {
+void SongDetector::onSongIdentified(const Song* song) {
     qDebug() << "onSongIdentified";
 
     m_trayIcon.showMessage(
-        "QVibra - Song Identified",
+        "SongDetector - Song Identified",
         QString("Found %1 by %2").arg(song->getTitle(), song->getArtist()),
         QSystemTrayIcon::Information,
         5000

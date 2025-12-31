@@ -6,7 +6,7 @@
 #include <QTranslator>
 #include <qcoreapplication.h>
 
-#include "qvibra.h"
+#include "song_detector.h"
 
 int main(int argc, char *argv[])
 {
@@ -15,24 +15,20 @@ int main(int argc, char *argv[])
     app.setQuitOnLastWindowClosed(false);
 
     QCoreApplication::setOrganizationName("Martin Hignett");
-    QCoreApplication::setApplicationName("QVibra");
+    QCoreApplication::setApplicationName("SongDetector");
 
     // ...with tranlsation support
     QTranslator translator;
     const QStringList uiLanguages = QLocale::system().uiLanguages();
     for (const QString &locale : uiLanguages) {
-        const QString baseName = "QVibra_" + QLocale(locale).name();
+        const QString baseName = "SongDetector_" + QLocale(locale).name();
         if (translator.load(":/i18n/" + baseName)) {
             app.installTranslator(&translator);
             break;
         }
     }
 
-    qDebug() << "Creating QVibra...";
-
-    QVibra qvibra(&app);
-
-    qDebug() << "Executing app...";
+    SongDetector songDetector(&app);
 
     // Launch the app!
     return app.exec();

@@ -12,6 +12,6 @@
     },
     "request": "launch",
     "adapter": "GDB",
-    "program": "build/debug/QVibra"
+    "program": "build/debug/SongDetector"
   }
 ]

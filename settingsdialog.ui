@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>QVibra Settings</string>
+   <string>SongDetector Settings</string>
   </property>
   <widget class="QWidget" name="formLayoutWidget">
    <property name="geometry">

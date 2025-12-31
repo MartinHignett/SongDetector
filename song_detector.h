@@ -1,5 +1,5 @@
-#ifndef QVIBRA_H
-#define QVIBRA_H
+#ifndef SONG_DETECTOR_H
+#define SONG_DETECTOR_H
 
 #include <QObject>
 #include <QSystemTrayIcon>
@@ -10,11 +10,11 @@
 #include "song.h"
 #include "audiostream.h"
 
-class QVibra : public QObject {
+class SongDetector : public QObject {
     Q_OBJECT;
 
 public:
-    QVibra(QApplication* app);
+    SongDetector(QApplication* app);
 
 public slots:
     void onSongIdentified(const Song* song);
@@ -25,4 +25,4 @@ private:
     QMenu           m_menu;
 };
 
-#endif // QVIBRA_H
+#endif // SONG_DETECTOR_H

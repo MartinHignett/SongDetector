@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.19)
-project(QVibra LANGUAGES CXX)
+project(SongDetector LANGUAGES CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -26,7 +26,7 @@ endif()
 
 qt_standard_project_setup()
 
-qt_add_executable(QVibra
+qt_add_executable(SongDetector
     WIN32 MACOSX_BUNDLE
     audiostream.cpp
     audiostream.h
@@ -38,15 +38,15 @@ qt_add_executable(QVibra
     shazam_body.h
     song.h
     song.cpp
-    qvibra.h
-    qvibra.cpp
+    song_detector.h
+    song_detector.cpp
 )
 
-qt_add_translations(QVibra
-    TS_FILES translations/QVibra_en_GB.ts
+qt_add_translations(SongDetector
+    TS_FILES translations/SongDetector_en_GB.ts
 )
 
-qt6_add_resources(QVibra "resources"
+qt6_add_resources(SongDetector "resources"
     PREFIX "/"
     FILES resources/app.ico
 )
@@ -77,9 +77,9 @@ set_target_properties(Vibra
         IMPORTED_LOCATION ${VIBRA_LIBRARY}
 )
 
-target_include_directories(QVibra PRIVATE ${VIBRA_INCLUDE_DIR})
+target_include_directories(SongDetector PRIVATE ${VIBRA_INCLUDE_DIR})
 
-target_link_libraries(QVibra
+target_link_libraries(SongDetector
     PRIVATE
         Qt6::Core
         Qt6::Widgets
@@ -91,7 +91,7 @@ target_link_libraries(QVibra
 
 include(GNUInstallDirs)
 
-install(TARGETS QVibra
+install(TARGETS SongDetector
     BUNDLE  DESTINATION .
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -105,7 +105,7 @@ message(STATUS "Found Qt6: ${Qt6Core_VERSION}")
 if(Qt6Core_VERSION VERSION_GREATER_EQUAL "6.5")
     # Newer syntax for your Ubuntu 25.10
     qt_generate_deploy_app_script(
-        TARGET QVibra
+        TARGET SongDetector
         OUTPUT_SCRIPT deploy_script
         NO_UNSUPPORTED_PLATFORM_ERROR
     )
@@ -113,7 +113,7 @@ if(Qt6Core_VERSION VERSION_GREATER_EQUAL "6.5")
 elseif(COMMAND qt_generate_deploy_app_script)
     # Older Qt6 syntax
     qt_generate_deploy_app_script(
-        TARGET QVibra
+        TARGET SongDetector
         FILENAME_VARIABLE deploy_script
         NO_UNSUPPORTED_PLATFORM_ERROR
     )

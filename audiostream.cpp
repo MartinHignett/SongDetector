@@ -158,7 +158,7 @@ QList<QAudioDevice> AudioStream::getAudioDevices() const {
 void AudioStream::initializePipewire() {
     pw_init(nullptr, nullptr);
 
-    m_loop = pw_thread_loop_new("QVibra", nullptr);
+    m_loop = pw_thread_loop_new("SongDetector", nullptr);
     m_context = pw_context_new(pw_thread_loop_get_loop(m_loop), nullptr, 0);
     m_core = pw_context_connect(m_context, nullptr, 0);
 
@@ -172,7 +172,7 @@ void AudioStream::initializePipewire() {
         // Hard code to Bluez monitor for now...
         // PW_KEY_NODE_TARGET, "bluez_output.AC_80_0A_2B_EC_71.1.monitor"
         PW_KEY_STREAM_CAPTURE_SINK, "true",
-        PW_KEY_APP_NAME, "QVibra",
+        PW_KEY_APP_NAME, "SongDetector",
         NULL);
 
 
@@ -185,7 +185,7 @@ void AudioStream::initializePipewire() {
 
     m_stream = pw_stream_new_simple(
         pw_thread_loop_get_loop(m_loop),
-        "QVibra",
+        "SongDetector",
         properties,
         &stream_events,
         (void *)this);
