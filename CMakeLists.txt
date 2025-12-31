@@ -36,6 +36,8 @@ qt_add_executable(QVibra
     settingsdialog.ui
     shazam_body.cpp
     shazam_body.h
+    song.h
+    song.cpp
 )
 
 qt_add_translations(QVibra

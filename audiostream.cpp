@@ -438,7 +438,22 @@ void AudioStream::shazamLookup(const QString& uri) {
 
         if (response) {
             QRestReply restResponse(response);
-            qDebug() << restResponse.readBody();
+            if (!restResponse.isSuccess()) {
+                qDebug() << "Error returned by Shazam";
+            } else {
+                const auto jsonResponse = restResponse.readJson();
+
+                if (jsonResponse.has_value()) {
+                    const auto json = jsonResponse.value();
+                    const auto song = Song::fromJsonDocument(json);
+
+                    qDebug() << "Found song: " << song->getFound();
+
+                    if (song->getFound()) {
+                        qDebug() << "Song name: " << song->getTitle() << " Arist: " << song->getArtist();
+                    }
+                }
+            }
             response->deleteLater();
         }
 

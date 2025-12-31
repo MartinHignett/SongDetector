@@ -12,6 +12,8 @@
 #include <atomic>
 #include <pipewire/pipewire.h>
 
+#include "song.h"
+
 class AudioStream : public QObject {
     Q_OBJECT;
 
@@ -24,7 +26,7 @@ class AudioStream : public QObject {
 
         pw_stream*          m_stream;
 
-        void paramChanged(void* userData, uint32_t id, const struct spa_pod* param);
+        void paramChanged(void* userData, uint32_t id, const struct spa_pod *param);
         void processAudio(void *userData);
 
     public slots:
@@ -37,6 +39,7 @@ class AudioStream : public QObject {
 
     signals:
         void audioDevicesChanged(QList<QAudioDevice> *devices);
+        void songIdentified(Song *song);
         // void currentAudioDeviceChanged(QAudioDevice *device);
 
     private:
@@ -51,12 +54,12 @@ class AudioStream : public QObject {
         std::atomic<bool>   m_isCapturing{true};
 
         /* PipeWire properties */
-        pw_thread_loop*     m_loop = nullptr;
+        pw_thread_loop      *m_loop = nullptr;
         pw_context*         m_context = nullptr;
         pw_properties*      m_properties = nullptr;
         pw_core*            m_core = nullptr;
         struct spa_hook     m_stream_listener = {};
-        struct pw_registry* m_registry = nullptr;
+        struct pw_registry  *m_registry = nullptr;
         struct spa_hook     m_registry_listener;
         uint32_t            m_monitor_fl_port_id = 0;
         uint32_t            m_monitor_fr_port_id = 0;
@@ -78,14 +81,14 @@ class AudioStream : public QObject {
         /*
          * Shazam Methods
          */
-        void                shazamLookup(const QString& uri);
-        void                getRequestContent(const char* uri, const unsigned int sample_ms);
+        void                shazamLookup(const QString &uri);
+        void                getRequestContent(const char *uri, const unsigned int sample_ms);
 
         /*
          * PipeWire Event Handlers
          */
         static void         onProcessAudio(void *userData);
-        static void         onParamChanged(void* userData, uint32_t id, const struct spa_pod* param);
+        static void         onParamChanged(void *userData, uint32_t id, const struct spa_pod *param);
 
         // This is for debugging only
         // static void         onStateChanged(void* userData, enum pw_stream_state old_state, enum pw_stream_state state, const char* error);
