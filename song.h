@@ -11,11 +11,11 @@ class Song: public QObject {
         static Song* fromJsonDocument(const QJsonDocument& document);
 
         /* Getters */
-        bool        getFound();
-        QString     getTitle();
-        QString     getArtist();
-        QString     getAlbum();
-        int         getTrack();
+        bool        getFound() const;
+        QString     getTitle() const;
+        QString     getArtist() const;
+        QString     getAlbum() const;
+        int         getTrack() const;
 
     private:
         /* Constructors */

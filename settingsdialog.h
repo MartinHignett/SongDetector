@@ -17,13 +17,13 @@ class SettingsDialog : public QDialog
     Q_OBJECT
 
 public:
-    SettingsDialog(AudioStream *audioStream, QWidget *parent = nullptr);
+    SettingsDialog(AudioStream* audioStream, QWidget *parent = nullptr);
     ~SettingsDialog();
 
 private:
-    Ui::SettingsDialog  *ui;
-    AudioStream         *m_audioStream;
-    QSettings           *m_settings;
+    Ui::SettingsDialog* ui;
+    AudioStream*        m_audioStream;
+    QSettings*          m_settings;
 
     void updateAudioDevices();
     void onDeviceChanged();

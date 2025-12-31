@@ -18,11 +18,11 @@ class AudioStream : public QObject {
     Q_OBJECT;
 
     public:
-        AudioStream(QApplication *parent = nullptr);
+        AudioStream(QObject* parent = nullptr);
         ~AudioStream();
 
-        QAudioDevice        getCurrentAudioDevice();
-        QList<QAudioDevice> getAudioDevices();
+        QAudioDevice        getCurrentAudioDevice() const;
+        QList<QAudioDevice> getAudioDevices() const;
 
         pw_stream*          m_stream;
 
@@ -39,7 +39,7 @@ class AudioStream : public QObject {
 
     signals:
         void audioDevicesChanged(QList<QAudioDevice> *devices);
-        void songIdentified(Song *song);
+        void songIdentified(const Song *song);
         // void currentAudioDeviceChanged(QAudioDevice *device);
 
     private:

@@ -37,7 +37,7 @@ extern "C" {
 #define SHAZAM_URL QStringLiteral("https://amp.shazam.com/discovery/v5/en/US/android/-/tag/")
 #define SHAZAM_QUERY_PARAMS QStringLiteral("?sync=true&webv3=true&sampling=true&connected=&shazamapiversion=v3&sharehub=true&video=v3")
 
-AudioStream::AudioStream(QApplication *parent)
+AudioStream::AudioStream(QObject* parent)
     : QObject(parent),
    m_currentAudioDevice(QMediaDevices::defaultAudioOutput()) {
 
@@ -83,11 +83,11 @@ AudioStream::~AudioStream() {
  * Public Methods
  ******************************/
 
-QAudioDevice AudioStream::getCurrentAudioDevice() {
+QAudioDevice AudioStream::getCurrentAudioDevice() const {
     return m_currentAudioDevice;
 }
 
-QList<QAudioDevice> AudioStream::getAudioDevices() {
+QList<QAudioDevice> AudioStream::getAudioDevices() const {
     return m_audioDevices;
 }
 
@@ -433,7 +433,7 @@ void AudioStream::shazamLookup(const QString& uri) {
     request.setRawHeader("Content-Language", "en_US");
 
     const auto response = restAccessManager->post(request, jsonBody);
-    QObject::connect(response, &QNetworkReply::finished, this, [response, restAccessManager, networkAccessManager]() {
+    QObject::connect(response, &QNetworkReply::finished, this, [this, response, restAccessManager, networkAccessManager]() {
         qDebug() << "Shazam finished!";
 
         if (response) {
@@ -451,6 +451,7 @@ void AudioStream::shazamLookup(const QString& uri) {
 
                     if (song->getFound()) {
                         qDebug() << "Song name: " << song->getTitle() << " Arist: " << song->getArtist();
+                        QMetaObject::invokeMethod(this, "songIdentified", Qt::QueuedConnection, Q_ARG(const Song*, song));
                     }
                 }
             }

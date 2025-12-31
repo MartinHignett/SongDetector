@@ -7,16 +7,16 @@
 #include "settingsdialog.h"
 #include "ui_settingsdialog.h"
 
-SettingsDialog::SettingsDialog(AudioStream *audioStream, QWidget *parent)
+SettingsDialog::SettingsDialog(AudioStream* audioStream, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::SettingsDialog)
 {
     this->m_audioStream = audioStream;
     ui->setupUi(this);
-    this->updateAudioDevices();
+    updateAudioDevices();
     connect(m_audioStream, &AudioStream::audioDevicesChanged, this, &SettingsDialog::updateAudioDevices);
-    connect(this->ui->audioDeviceCombo, &QComboBox::currentIndexChanged, this, &SettingsDialog::onDeviceChanged);
-    connect(this->ui->startButton, &QPushButton::clicked, this, &SettingsDialog::startFingerprint);
+    connect(ui->audioDeviceCombo, &QComboBox::currentIndexChanged, this, &SettingsDialog::onDeviceChanged);
+    connect(ui->startButton, &QPushButton::clicked, this, &SettingsDialog::startFingerprint);
 }
 
 SettingsDialog::~SettingsDialog()
@@ -26,20 +26,20 @@ SettingsDialog::~SettingsDialog()
 
 void SettingsDialog::updateAudioDevices(){
     ui->audioDeviceCombo->clear();
-    const auto devices = this->m_audioStream->getAudioDevices();
+    const auto devices = m_audioStream->getAudioDevices();
     for(const QAudioDevice &device : devices) {
         ui->audioDeviceCombo->addItem(device.description(), QVariant::fromValue(device));
-        if(device.id() == this->m_audioStream->getCurrentAudioDevice().id()) {
+        if(device.id() == m_audioStream->getCurrentAudioDevice().id()) {
             // TODO: Select the current audio device in the combobox
         }
     }
 }
 
 void SettingsDialog::onDeviceChanged() {
-    const auto device = this->ui->audioDeviceCombo->currentData().value<QAudioDevice>();
-    this->m_audioStream->setCurrentAudioDevice(device);
+    const auto device = ui->audioDeviceCombo->currentData().value<QAudioDevice>();
+    m_audioStream->setCurrentAudioDevice(device);
 }
 
 void SettingsDialog::startFingerprint() {
-    this->m_audioStream->startIdentify();
+    m_audioStream->startIdentify();
 }

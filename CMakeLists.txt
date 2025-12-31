@@ -38,6 +38,8 @@ qt_add_executable(QVibra
     shazam_body.h
     song.h
     song.cpp
+    qvibra.h
+    qvibra.cpp
 )
 
 qt_add_translations(QVibra

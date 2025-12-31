@@ -6,10 +6,14 @@
 
 #include "song.h"
 
+#define SECTION_TYPE QStringLiteral("type")
+#define SECTION_METADATA QStringLiteral("metadata")
 #define SONG_SECTION_TYPE QStringLiteral("SONG")
 #define METADATA_ALBUM_FIELD QStringLiteral("Album")
 #define METADATA_LABEL_FIELD QStringLiteral("Label")
 #define METADATA_RELEASE_DATE_FIELD QStringLiteral("Released")
+#define METADATA_TILE QStringLiteral("title")
+#define METADATA_TEXT QStringLiteral("text")
 
 Song::Song() :
     m_found(false) {
@@ -28,7 +32,6 @@ Song::~Song() {
 /* JSON Parser */
 Song* Song::fromJsonDocument(const QJsonDocument& json) {
     static QStringList requiredFields = {"title", "subtitle"};
-
     const QJsonObject rootObject = json.object();
     const QJsonValue trackRef = json["track"];
 
@@ -48,12 +51,10 @@ Song* Song::fromJsonDocument(const QJsonDocument& json) {
     // The Shazam JSON schema seems to use subtitle for the arist name
     // I'm not sure how reliable that is...
     const auto song = new Song(track["title"].toString(), track["subtitle"].toString());
-
     const auto sectionsRef = track["sections"];
     if (sectionsRef.isArray()) {
         song->parseSections(sectionsRef);
     }
-
 
     return song;
 }
@@ -70,11 +71,11 @@ void Song::parseSections(const QJsonValue& sectionsRef) {
 void Song::parseSection(const QJsonValue& sectionRef) {
     const auto section = sectionRef.toObject();
 
-    if (section.contains("type") &&
-        section.contains("metadata") &&
-        section["type"] == SONG_SECTION_TYPE &&
-        section["metadata"].isArray()) {
-        const auto metadataRef = section["metadata"];
+    if (section.contains(SECTION_TYPE) &&
+        section.contains(SECTION_METADATA) &&
+        section[SECTION_TYPE] == SONG_SECTION_TYPE &&
+        section[SECTION_METADATA].isArray()) {
+        const auto metadataRef = section[SECTION_METADATA];
         parseMetadata(metadataRef);
     }
 }
@@ -89,33 +90,33 @@ void Song::parseMetadata(const QJsonValue& metadataRef) {
 
         const auto data = dataRef.toObject();
 
-        if (data.contains("title") &&
-            data.contains("text")) {
+        if (data.contains(METADATA_TILE) &&
+            data.contains(METADATA_TEXT)) {
 
-            if (data["title"] == METADATA_ALBUM_FIELD) {
-                m_album = data["text"].toString();
+            if (data[METADATA_TILE] == METADATA_ALBUM_FIELD) {
+                m_album = data[METADATA_TEXT].toString();
             }
         }
     }
 }
 
 /* Getters */
-bool Song::getFound() {
+bool Song::getFound() const {
     return m_found;
 }
 
-QString Song::getTitle() {
+QString Song::getTitle() const {
     return m_title;
 }
 
-QString Song::getAlbum() {
+QString Song::getAlbum() const {
     return m_album;
 }
 
-QString Song::getArtist() {
+QString Song::getArtist() const {
     return m_artist;
 }
 
-int Song::getTrack() {
+int Song::getTrack() const {
     return m_track;
 }

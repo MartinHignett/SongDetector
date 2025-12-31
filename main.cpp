@@ -1,15 +1,12 @@
-#include "settingsdialog.h"
-
 #include <QApplication>
 #include <QIcon>
 #include <QLocale>
 #include <QMenu>
 #include <QSettings>
-#include <QSystemTrayIcon>
 #include <QTranslator>
 #include <qcoreapplication.h>
 
-#include "audiostream.h"
+#include "qvibra.h"
 
 int main(int argc, char *argv[])
 {
@@ -31,21 +28,11 @@ int main(int argc, char *argv[])
         }
     }
 
-    const auto audioStream = new  AudioStream(&app);
+    qDebug() << "Creating QVibra...";
 
-    // Setup system tray menu...
-    QMenu menu;
-    menu.addAction(QCoreApplication::translate("ContextMenu", "Settings..."), [audioStream]{
-        auto settingsDialog = new SettingsDialog(audioStream);
-        settingsDialog->show();
-    });
-    menu.addAction(QCoreApplication::translate("ContextMenu", "Quit"), &app, &QApplication::quit);
+    QVibra qvibra(&app);
 
-    // Create a system tray icon and show it
-    QSystemTrayIcon tray;
-    tray.setContextMenu(&menu);
-    tray.setIcon(QIcon(":/resources/app.ico"));
-    tray.show();
+    qDebug() << "Executing app...";
 
     // Launch the app!
     return app.exec();
