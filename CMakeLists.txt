@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.19)
 project(SongDetector LANGUAGES CXX)
 
+set(SRC_DIR src)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -13,7 +15,15 @@ set(QT_FALLBACK_VERSION "6.9.0")
 set(QT_MINIMUM_VERSION "6.7.0")
 set(KF_MIN_VERSION "6.0.0")
 
-find_package(Qt6 6.4 REQUIRED COMPONENTS Core Widgets LinguistTools Multimedia)
+find_package(Qt6 6.4 REQUIRED
+    COMPONENTS
+        Core
+        Widgets
+        LinguistTools
+        Multimedia
+        Svg
+)
+
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(PIPEWIRE REQUIRED IMPORTED_TARGET libpipewire-0.3)
 
@@ -27,28 +37,30 @@ endif()
 qt_standard_project_setup()
 
 qt_add_executable(SongDetector
-    WIN32 MACOSX_BUNDLE
-    audiostream.cpp
-    audiostream.h
-    main.cpp
-    settingsdialog.cpp
-    settingsdialog.h
-    settingsdialog.ui
-    shazam_body.cpp
-    shazam_body.h
-    song.h
-    song.cpp
-    song_detector.h
-    song_detector.cpp
+    ${SRC_DIR}/audiostream.cpp
+    ${SRC_DIR}/audiostream.h
+    ${SRC_DIR}/main.cpp
+    ${SRC_DIR}/settingsdialog.cpp
+    ${SRC_DIR}/settingsdialog.h
+    ${SRC_DIR}/settingsdialog.ui
+    ${SRC_DIR}/shazam_body.cpp
+    ${SRC_DIR}/shazam_body.h
+    ${SRC_DIR}/song.h
+    ${SRC_DIR}/song.cpp
+    ${SRC_DIR}/song_detector.h
+    ${SRC_DIR}/song_detector.cpp
 )
 
 qt_add_translations(SongDetector
     TS_FILES translations/SongDetector_en_GB.ts
 )
 
+# Add them to resources using absolute paths
 qt6_add_resources(SongDetector "resources"
     PREFIX "/"
-    FILES resources/app-dark-mode.ico resources/app-light-mode.ico
+    FILES
+        resources/icons/app-dark-mode.svg
+        resources/icons/app-light-mode.svg
 )
 
 # Find Vibra library and headers
@@ -84,6 +96,7 @@ target_link_libraries(SongDetector
         Qt6::Core
         Qt6::Widgets
         Qt6::Multimedia
+        Qt6::Svg
         PkgConfig::PIPEWIRE
         Vibra
         ${FFTW3_LIBRARY}

@@ -1,5 +1,6 @@
 
 #include <QApplication>
+#include <QDir>
 #include <QMenu>
 #include <QObject>
 #include <QSystemTrayIcon>
@@ -47,9 +48,9 @@ void SongDetector::setTrayIcon() {
     }
 
     if (darkModeIcon) {
-        m_trayIcon.setIcon(QIcon(":/resources/app-dark-mode.ico"));
+        m_trayIcon.setIcon(QIcon(":/resources/icons/app-dark-mode.svg"));
     } else {
-        m_trayIcon.setIcon(QIcon(":/resources/app-light-mode.ico"));
+        m_trayIcon.setIcon(QIcon(":/resources/icons/app-light-mode.svg"));
     }
 }
 
