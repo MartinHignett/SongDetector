@@ -32,8 +32,8 @@ extern "C" {
 
 #include "audiostream.h"
 #include "shazam_body.h"
+#include "settings.h"
 
-#define SELECTED_DEVICE_SETTING "deviceId"
 #define SHAZAM_URL QStringLiteral("https://amp.shazam.com/discovery/v5/en/US/android/-/tag/")
 #define SHAZAM_QUERY_PARAMS QStringLiteral("?sync=true&webv3=true&sampling=true&connected=&shazamapiversion=v3&sharehub=true&video=v3")
 
@@ -101,6 +101,7 @@ QList<QAudioDevice> AudioStream::getAudioDevices() const {
  }
 
  void AudioStream::setCurrentAudioDevice(QAudioDevice device) {
+     qDebug() << "Saving current device";
      m_currentAudioDevice = device;
      m_settings->setValue(SELECTED_DEVICE_SETTING, QVariant(device.id()));
  }

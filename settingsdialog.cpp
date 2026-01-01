@@ -1,22 +1,26 @@
 #include <QAudioDevice>
 #include <QMediaDevices>
 #include <QObject>
+#include <qcheckbox.h>
 #include <qcombobox.h>
 #include <qmediadevices.h>
 
 #include "settingsdialog.h"
 #include "ui_settingsdialog.h"
+#include "settings.h"
 
 SettingsDialog::SettingsDialog(AudioStream* audioStream, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::SettingsDialog)
 {
-    this->m_audioStream = audioStream;
+    m_settings = new QSettings();
+    m_audioStream = audioStream;
     ui->setupUi(this);
     updateAudioDevices();
     connect(m_audioStream, &AudioStream::audioDevicesChanged, this, &SettingsDialog::updateAudioDevices);
     connect(ui->audioDeviceCombo, &QComboBox::currentIndexChanged, this, &SettingsDialog::onDeviceChanged);
     connect(ui->startButton, &QPushButton::clicked, this, &SettingsDialog::startFingerprint);
+    connect(ui->darkModeIcon, &QCheckBox::clicked, this, &SettingsDialog::setForceDarkMode);
 }
 
 SettingsDialog::~SettingsDialog()
@@ -40,6 +44,19 @@ void SettingsDialog::onDeviceChanged() {
     m_audioStream->setCurrentAudioDevice(device);
 }
 
+/*
+ * Slots
+ */
+
 void SettingsDialog::startFingerprint() {
     m_audioStream->startIdentify();
+}
+
+void SettingsDialog::setForceDarkMode(bool checked) {
+    if (m_settings != nullptr) {
+        m_settings->setValue(DARK_TRAY_ICON_SETTING, QVariant(checked));
+    } else {
+        qDebug() << "oops!";
+    }
+    forceDarkModeChanged();
 }

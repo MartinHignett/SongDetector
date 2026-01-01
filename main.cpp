@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     app.setQuitOnLastWindowClosed(false);
 
-    QCoreApplication::setOrganizationName("Martin Hignett");
+    QCoreApplication::setOrganizationName("Martin");
     QCoreApplication::setApplicationName("SongDetector");
 
     // ...with tranlsation support

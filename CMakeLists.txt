@@ -48,7 +48,7 @@ qt_add_translations(SongDetector
 
 qt6_add_resources(SongDetector "resources"
     PREFIX "/"
-    FILES resources/app.ico
+    FILES resources/app-dark-mode.ico resources/app-light-mode.ico
 )
 
 # Find Vibra library and headers

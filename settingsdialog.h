@@ -7,6 +7,7 @@
 #include <QSettings>
 
 #include "audiostream.h"
+#include "song_detector.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class SettingsDialog; }
@@ -28,8 +29,12 @@ private:
     void updateAudioDevices();
     void onDeviceChanged();
 
+signals:
+    void forceDarkModeChanged();
+
 private slots:
      void startFingerprint();
+     void setForceDarkMode(bool checked);
 };
 
 #endif // SETTINGSDIALOG_H

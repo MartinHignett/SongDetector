@@ -18,11 +18,14 @@ public:
 
 public slots:
     void onSongIdentified(const Song* song);
+    void onForceDarkIconChanged();
 
 private:
     AudioStream*    m_audioStream;
     QSystemTrayIcon m_trayIcon;
     QMenu           m_menu;
+
+    void            setTrayIcon();
 };
 
 #endif // SONG_DETECTOR_H
