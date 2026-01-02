@@ -57,24 +57,16 @@ PipeWireMonitor::PipeWireMonitor(QString& applicationName, QObject* parent) :
 
 void PipeWireMonitor::setApplicationName(QString& applicationName) {
     const auto applicationNameBytes = applicationName.toUtf8();
-
-    // Create the char array
     char* strApplicationName = new char[applicationNameBytes.size() + 1];
     strcpy(strApplicationName, applicationNameBytes.constData());
-
-    // Transfer ownership to QScopedArrayPointer
     m_applicationName.reset(strApplicationName);
 }
 
 void PipeWireMonitor::setDeviceId(QString* deviceId) {
     if (!m_useDefaultDevice) {
         const auto deviceIdBytes = deviceId->toUtf8();
-
-        // Create the char array
         char* strDeviceId = new char[deviceIdBytes.size() + 1];
         strcpy(strDeviceId, deviceIdBytes.constData());
-
-        // Transfer ownership to QScopedArrayPointer
         m_deviceId.reset(strDeviceId);
     }
 }
