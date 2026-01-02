@@ -21,6 +21,7 @@ class Shazam : public QObject {
     protected slots:
         void    parseShazamResponse(const QJsonDocument& shazamJsonDocument);
         void    onShazamError();
+        void    onShazamResponse();
 
     signals:
         void    detectionComplete(const ShazamResponse& response);

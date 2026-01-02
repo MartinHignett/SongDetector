@@ -34,32 +34,33 @@ void Shazam::detectFromUri(const QString& uri, const int bufferLengthInSeconds) 
     request.setRawHeader("Content-Language", "en_US");
 
     const auto response = restAccessManager->post(request, jsonBody);
-    QObject::connect(response, &QNetworkReply::finished, this, [this, response, restAccessManager, networkAccessManager]() {
-        qDebug() << "Shazam finished!";
+    QObject::connect(response, &QNetworkReply::finished, this, &Shazam::onShazamResponse);
+}
 
-        if (response) {
-            QRestReply restResponse(response);
-            if (!restResponse.isSuccess()) {
-                qWarning() << "Error returned by Shazam";
-                QMetaObject::invokeMethod(
-                    this,
-                    "onShazamError",
-                    Qt::QueuedConnection);
-            } else {
-                const auto jsonResponse = restResponse.readJson();
-                QMetaObject::invokeMethod(
-                    this,
-                    "parseShazamResponse",
-                    Qt::QueuedConnection,
-                    Q_ARG(const QJsonDocument, jsonResponse.value()));
-            }
-            response->deleteLater();
+void Shazam::onShazamResponse() {
+    // Use sender() to get the QNetworkReply that emitted the signal
+    auto* response = qobject_cast<QNetworkReply*>(sender());
+
+    qDebug() << "Shazam finished!";
+
+    if (response) {
+        QRestReply restResponse(response);
+        if (!restResponse.isSuccess()) {
+            qWarning() << "Error returned by Shazam";
+            QMetaObject::invokeMethod(
+                this,
+                "onShazamError",
+                Qt::QueuedConnection);
+        } else {
+            const auto jsonResponse = restResponse.readJson();
+            QMetaObject::invokeMethod(
+                this,
+                "parseShazamResponse",
+                Qt::QueuedConnection,
+                Q_ARG(const QJsonDocument, jsonResponse.value()));
         }
-
-        restAccessManager->deleteLater();
-        networkAccessManager->deleteLater();
-    },
-    Qt::QueuedConnection);
+        response->deleteLater();
+    }
 }
 
 void Shazam::parseShazamResponse(const QJsonDocument& shazamJsonDocument) {
