@@ -4,28 +4,36 @@
 #include <QObject>
 #include <QSystemTrayIcon>
 #include <pthread.h>
+#include <qcontainerfwd.h>
 #include <qmenu.h>
 #include <qtmetamacros.h>
 
-#include "song.h"
-#include "audiostream.h"
+#include "pipewire/pipewire_monitor.h"
+#include "shazam/shazam.h"
 
 class SongDetector : public QObject {
-    Q_OBJECT;
+    Q_OBJECT
 
 public:
     SongDetector(QApplication* app);
 
 public slots:
-    void onSongIdentified(const Song* song);
-    void onForceDarkIconChanged();
+    void                onForceDarkIconChanged();
+    void                onStartDetection();
+    void                onOpenSettings();
+    void                onCaptureCompleted(QByteArray audioBuffer);
+    void                onDetectionComplete(const ShazamResponse& response);
+    void                onCurrentDeviceChanged(const QString& deviceId);
 
 private:
-    AudioStream*    m_audioStream;
-    QSystemTrayIcon m_trayIcon;
-    QMenu           m_menu;
+    PipeWireMonitor*    m_pipeWireMonitor = nullptr;
+    Shazam              m_shazam;
+    QSystemTrayIcon     m_trayIcon;
+    QMenu               m_menu;
+    QString             m_applicationName;
 
-    void            setTrayIcon();
+    void                setTrayIcon();
+    void                initialisePipeWire();
 };
 
 #endif // SONG_DETECTOR_H

@@ -1,10 +1,11 @@
+#include <QDebug>
 #include <QJsonDocument>
 #include <QJsonObject>      // <- This is what you're missing
 #include <QJsonValue>
 #include <QJsonArray>       // If you're also working with arrays
 #include <qlist.h>
 
-#include "song.h"
+#include "shazam_response.h"
 
 #define SECTION_TYPE QStringLiteral("type")
 #define SECTION_METADATA QStringLiteral("metadata")
@@ -15,51 +16,51 @@
 #define METADATA_TILE QStringLiteral("title")
 #define METADATA_TEXT QStringLiteral("text")
 
-Song::Song() :
+ShazamResponse::ShazamResponse() :
     m_found(false) {
 }
 
-Song::Song(QString title, QString artist) :
+ShazamResponse::ShazamResponse(QString title, QString artist) :
     m_title(title),
     m_artist(artist),
     m_found(true) {
 }
 
 /* Destructor */
-Song::~Song() {
+ShazamResponse::~ShazamResponse() {
 }
 
 /* JSON Parser */
-Song* Song::fromJsonDocument(const QJsonDocument& json) {
+ShazamResponse ShazamResponse::fromJsonDocument(const QJsonDocument& json) {
     static QStringList requiredFields = {"title", "subtitle"};
     const QJsonObject rootObject = json.object();
     const QJsonValue trackRef = json["track"];
 
     if (!trackRef.isObject()) {
-        qDebug() << "Shazam couldn't identify song";
-        return new Song();
+        qWarning() << "Shazam couldn't identify song";
+        return ShazamResponse();
     }
 
     const auto track = trackRef.toObject();
     for (const QString &field : requiredFields) {
         if (!track.contains(field)) {
-            qDebug() << "Missing field: " << field;
-            return new Song();
+            qWarning() << "Missing field: " << field;
+            return ShazamResponse();
         }
     }
 
     // The Shazam JSON schema seems to use subtitle for the arist name
     // I'm not sure how reliable that is...
-    const auto song = new Song(track["title"].toString(), track["subtitle"].toString());
+    auto shazamResponse = ShazamResponse(track["title"].toString(), track["subtitle"].toString());
     const auto sectionsRef = track["sections"];
     if (sectionsRef.isArray()) {
-        song->parseSections(sectionsRef);
+        shazamResponse.parseSections(sectionsRef);
     }
 
-    return song;
+    return shazamResponse;
 }
 
-void Song::parseSections(const QJsonValue& sectionsRef) {
+void ShazamResponse::parseSections(const QJsonValue& sectionsRef) {
     const auto sections = sectionsRef.toArray();
     for (auto &sectionRef : sections) {
         if (sectionRef.isObject()) {
@@ -68,7 +69,7 @@ void Song::parseSections(const QJsonValue& sectionsRef) {
     }
 }
 
-void Song::parseSection(const QJsonValue& sectionRef) {
+void ShazamResponse::parseSection(const QJsonValue& sectionRef) {
     const auto section = sectionRef.toObject();
 
     if (section.contains(SECTION_TYPE) &&
@@ -80,7 +81,7 @@ void Song::parseSection(const QJsonValue& sectionRef) {
     }
 }
 
-void Song::parseMetadata(const QJsonValue& metadataRef) {
+void ShazamResponse::parseMetadata(const QJsonValue& metadataRef) {
     const auto metadata = metadataRef.toArray();
 
     for (auto &dataRef : metadata) {
@@ -100,23 +101,26 @@ void Song::parseMetadata(const QJsonValue& metadataRef) {
     }
 }
 
-/* Getters */
-bool Song::getFound() const {
+/*
+ * Getters
+ */
+
+bool ShazamResponse::getFound() const {
     return m_found;
 }
 
-QString Song::getTitle() const {
+QString ShazamResponse::getTitle() const {
     return m_title;
 }
 
-QString Song::getAlbum() const {
+QString ShazamResponse::getAlbum() const {
     return m_album;
 }
 
-QString Song::getArtist() const {
+QString ShazamResponse::getArtist() const {
     return m_artist;
 }
 
-int Song::getTrack() const {
+int ShazamResponse::getTrack() const {
     return m_track;
 }

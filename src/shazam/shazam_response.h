@@ -1,14 +1,23 @@
-#ifndef SONG_H
-#define SONG_H
+#ifndef SHAZAM_RESPONSE_H
+#define SHAZAM_RESPONSE_H
 
-#include <QJsonDocument>
 #include <QObject>
+#include <QString>
+#include <qtmetamacros.h>
 
-class Song: public QObject {
-    Q_OBJECT;
-
+class ShazamResponse {
     public:
-        static Song* fromJsonDocument(const QJsonDocument& document);
+        /*
+        * Default constructor
+        *
+        * Creates an empty instance with found set to false
+        */
+        ShazamResponse();
+
+        /* Destructor */
+        ~ShazamResponse();
+
+        static ShazamResponse fromJsonDocument(const QJsonDocument& document);
 
         /* Getters */
         bool        getFound() const;
@@ -21,22 +30,14 @@ class Song: public QObject {
         /* Constructors */
 
         /*
-         * Default constructor
-         *
-         * Creates an empty instance with found set to false
-         */
-        Song();
+        * Creates a new instance
+        */
+        ShazamResponse(QString title, QString artist);
 
-        /*
-         * Creates a new instance
-         */
-        Song(QString title, QString artist);
-
-        /* Destructor */
-        ~Song();
+        /* true if the song was found, otherwise false */
+        bool        m_found;
 
         /* Song data */
-        bool        m_found;
         QString     m_title;
         QString     m_artist;
         QString     m_album;
@@ -46,6 +47,7 @@ class Song: public QObject {
         void        parseSections(const QJsonValue& sectionsRef);
         void        parseSection(const QJsonValue& sectionRef);
         void        parseMetadata(const QJsonValue& metadataRef);
+
 };
 
-#endif // SONG_H
+#endif // SHAZAM_RESPONSE_H

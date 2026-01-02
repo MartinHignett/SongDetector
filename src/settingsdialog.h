@@ -5,9 +5,7 @@
 #include <QDialog>
 #include <QMediaDevices>
 #include <QSettings>
-
-#include "audiostream.h"
-#include "song_detector.h"
+#include <qmediadevices.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class SettingsDialog; }
@@ -18,22 +16,22 @@ class SettingsDialog : public QDialog
     Q_OBJECT
 
 public:
-    SettingsDialog(AudioStream* audioStream, QWidget *parent = nullptr);
+    SettingsDialog(QWidget *parent = nullptr);
     ~SettingsDialog();
 
 private:
     Ui::SettingsDialog* ui;
-    AudioStream*        m_audioStream;
     QSettings*          m_settings;
+    QMediaDevices*      m_mediaDevices;
 
-    void updateAudioDevices();
     void onDeviceChanged();
 
 signals:
     void forceDarkModeChanged();
+    void currentDeviceChanged(const QString& deviceId);
 
 private slots:
-     void startFingerprint();
+     void updateAudioDevices();
      void setForceDarkMode(bool checked);
 };
 

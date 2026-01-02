@@ -37,18 +37,20 @@ endif()
 qt_standard_project_setup()
 
 qt_add_executable(SongDetector
-    ${SRC_DIR}/audiostream.cpp
-    ${SRC_DIR}/audiostream.h
     ${SRC_DIR}/main.cpp
     ${SRC_DIR}/settingsdialog.cpp
     ${SRC_DIR}/settingsdialog.h
     ${SRC_DIR}/settingsdialog.ui
-    ${SRC_DIR}/shazam_body.cpp
-    ${SRC_DIR}/shazam_body.h
-    ${SRC_DIR}/song.h
-    ${SRC_DIR}/song.cpp
     ${SRC_DIR}/song_detector.h
     ${SRC_DIR}/song_detector.cpp
+    ${SRC_DIR}/pipewire/pipewire_monitor.h
+    ${SRC_DIR}/pipewire/pipewire_monitor.cpp
+    ${SRC_DIR}/shazam/shazam.h
+    ${SRC_DIR}/shazam/shazam.cpp
+    ${SRC_DIR}/shazam/shazam_body.h
+    ${SRC_DIR}/shazam/shazam_body.cpp
+    ${SRC_DIR}/shazam/shazam_response.h
+    ${SRC_DIR}/shazam/shazam_response.cpp
 )
 
 qt_add_translations(SongDetector
