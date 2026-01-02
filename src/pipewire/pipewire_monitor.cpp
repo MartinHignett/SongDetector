@@ -57,19 +57,25 @@ PipeWireMonitor::PipeWireMonitor(QString& applicationName, QObject* parent) :
 
 void PipeWireMonitor::setApplicationName(QString& applicationName) {
     const auto applicationNameBytes = applicationName.toUtf8();
+
+    // Create the char array
     char* strApplicationName = new char[applicationNameBytes.size() + 1];
     strcpy(strApplicationName, applicationNameBytes.constData());
-    m_applicationName = strApplicationName;
+
+    // Transfer ownership to QScopedArrayPointer
+    m_applicationName.reset(strApplicationName);
 }
 
 void PipeWireMonitor::setDeviceId(QString* deviceId) {
     if (!m_useDefaultDevice) {
-        // Copy deviceId to a char* and store in the object data
-        // since the lifecycle of deviceId is unknown
         const auto deviceIdBytes = deviceId->toUtf8();
+
+        // Create the char array
         char* strDeviceId = new char[deviceIdBytes.size() + 1];
         strcpy(strDeviceId, deviceIdBytes.constData());
-        m_deviceId = strDeviceId;
+
+        // Transfer ownership to QScopedArrayPointer
+        m_deviceId.reset(strDeviceId);
     }
 }
 
@@ -93,14 +99,6 @@ PipeWireMonitor::~PipeWireMonitor() {
     }
 
     pw_deinit();
-
-    if (m_deviceId != nullptr) {
-        delete[] m_deviceId;
-    }
-
-    if (m_applicationName != nullptr) {
-        delete[] m_applicationName;
-    }
 }
 
 /*******************************************************
@@ -173,7 +171,7 @@ void PipeWireMonitor::initializePipewire() {
         // Hard code to Bluez monitor for now...
         // PW_KEY_NODE_TARGET, "bluez_output.AC_80_0A_2B_EC_71.1.monitor"
         PW_KEY_STREAM_CAPTURE_SINK, "true",
-        PW_KEY_APP_NAME, m_applicationName,
+        PW_KEY_APP_NAME, m_applicationName.data(),
         NULL);
 
     static const pw_stream_events stream_events = {
@@ -185,7 +183,7 @@ void PipeWireMonitor::initializePipewire() {
 
     m_stream = pw_stream_new_simple(
         pw_thread_loop_get_loop(m_loop),
-        m_applicationName,
+        m_applicationName.data(),
         properties,
         &stream_events,
         (void *)this);

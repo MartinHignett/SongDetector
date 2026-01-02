@@ -58,8 +58,8 @@ class PipeWireMonitor : public QObject {
         /*
          * These are char* because that is what the PipeWire API needs
          */
-        const char*         m_applicationName = nullptr;
-        const char*         m_deviceId = nullptr;
+        QScopedArrayPointer<char> m_applicationName;
+        QScopedArrayPointer<char> m_deviceId;
 
         // True if m_deviceId has not been set
         const bool          m_useDefaultDevice;
