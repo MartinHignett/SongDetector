@@ -16,6 +16,13 @@ SettingsDialog::SettingsDialog(AudioStream* audioStream, QWidget* parent)
     m_settings = new QSettings();
     m_audioStream = audioStream;
     ui->setupUi(this);
+
+    if (m_settings->contains(DARK_TRAY_ICON_SETTING) && m_settings->value(DARK_TRAY_ICON_SETTING) == true) {
+        ui->darkModeIcon->setCheckState(Qt::CheckState::Checked);
+    } else {
+        ui->darkModeIcon->setCheckState(Qt::CheckState::Unchecked);
+    }
+
     updateAudioDevices();
     connect(m_audioStream, &AudioStream::audioDevicesChanged, this, &SettingsDialog::updateAudioDevices);
     connect(ui->audioDeviceCombo, &QComboBox::currentIndexChanged, this, &SettingsDialog::onDeviceChanged);
