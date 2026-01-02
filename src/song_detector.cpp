@@ -45,10 +45,10 @@ void SongDetector::initialisePipeWire() {
 
 void SongDetector::setTrayIcon() {
     bool darkModeIcon = false;
-    auto settings = new QSettings(this);
+    QSettings settings(this);
 
-    if (settings->contains(DARK_TRAY_ICON_SETTING)) {
-        darkModeIcon = settings->value(DARK_TRAY_ICON_SETTING) == true;
+    if (settings.contains(DARK_TRAY_ICON_SETTING)) {
+        darkModeIcon = settings.value(DARK_TRAY_ICON_SETTING) == true;
     } else {
         // Try to guess if we should use dark mode
         QPalette palette = QApplication::palette();
@@ -108,7 +108,8 @@ void SongDetector::onDetectionComplete(const ShazamResponse& response) {
 }
 
 void SongDetector::onOpenSettings() {
-    const auto settingsDialog = new SettingsDialog();
+    const auto settingsDialog = new SettingsDialog(nullptr);
+    settingsDialog->setAttribute(Qt::WA_DeleteOnClose);
     connect(settingsDialog, &SettingsDialog::forceDarkModeChanged, this, &SongDetector::onForceDarkIconChanged);
     connect(settingsDialog, &SettingsDialog::currentDeviceChanged, this, &SongDetector::onCurrentDeviceChanged);
     settingsDialog->show();
