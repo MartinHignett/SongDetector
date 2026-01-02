@@ -58,13 +58,12 @@ void Shazam::detectFromUri(const QString& uri, const int bufferLengthInSeconds) 
 
         restAccessManager->deleteLater();
         networkAccessManager->deleteLater();
-    });
+    },
+    Qt::QueuedConnection);
 }
 
 void Shazam::parseShazamResponse(const QJsonDocument& shazamJsonDocument) {
     const auto shazamResponse = ShazamResponse::fromJsonDocument(shazamJsonDocument);
-
-    qDebug() << "Found song: " << shazamResponse.getFound();
 
     if (shazamResponse.getFound()) {
         qDebug() << "Song name: " << shazamResponse.getTitle() << " Arist: " << shazamResponse.getArtist();
