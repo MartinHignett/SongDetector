@@ -95,11 +95,11 @@ PipeWireMonitor::~PipeWireMonitor() {
     pw_deinit();
 
     if (m_deviceId != nullptr) {
-        delete m_deviceId;
+        delete[] m_deviceId;
     }
 
     if (m_applicationName != nullptr) {
-        delete m_applicationName;
+        delete[] m_applicationName;
     }
 }
 
