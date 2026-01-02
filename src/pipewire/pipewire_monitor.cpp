@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QStringView>
 #include <QTimer>
+#include <pipewire/core.h>
 
 extern "C" {
     #include <pipewire/keys.h>
@@ -324,9 +325,6 @@ void PipeWireMonitor::readFromStream(void *userData) {
     // so defer this to the main UI thread:
     QMetaObject::invokeMethod(this, "captureCompleted", Qt::QueuedConnection, Q_ARG(QByteArray, m_audioBuffer));
     return;
-
-
-    pw_stream_queue_buffer(m_stream, buf);
 }
 
 void PipeWireMonitor::stopCapture() {
