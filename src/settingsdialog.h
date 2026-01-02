@@ -1,5 +1,4 @@
-#ifndef SETTINGSDIALOG_H
-#define SETTINGSDIALOG_H
+#pragma once
 
 #include <QAudioDevice>
 #include <QDialog>
@@ -34,5 +33,3 @@ private slots:
      void updateAudioDevices();
      void setForceDarkMode(bool checked);
 };
-
-#endif // SETTINGSDIALOG_H

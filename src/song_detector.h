@@ -1,5 +1,4 @@
-#ifndef SONG_DETECTOR_H
-#define SONG_DETECTOR_H
+#pragma once
 
 #include <QObject>
 #include <QSystemTrayIcon>
@@ -35,5 +34,3 @@ private:
     void                setTrayIcon();
     void                initialisePipeWire();
 };
-
-#endif // SONG_DETECTOR_H

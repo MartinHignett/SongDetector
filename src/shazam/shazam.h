@@ -1,5 +1,4 @@
-#ifndef SHAZAM_H
-#define SHAZAM_H
+#pragma once
 
 #include <QObject>
 #include <qstringview.h>
@@ -26,5 +25,3 @@ class Shazam : public QObject {
     signals:
         void    detectionComplete(const ShazamResponse& response);
 };
-
-#endif // SHAZAM_H

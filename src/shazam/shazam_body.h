@@ -1,5 +1,4 @@
-#ifndef SHAZAM_BODY
-#define SHAZAM_BODY
+#pragma once
 
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -44,5 +43,3 @@ class ShazamBody {
         const ShazamSignature     signature;
         const QString             timezone;
 };
-
-#endif // SHAZAM_BODY

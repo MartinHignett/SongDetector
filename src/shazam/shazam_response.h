@@ -1,5 +1,4 @@
-#ifndef SHAZAM_RESPONSE_H
-#define SHAZAM_RESPONSE_H
+#pragma once
 
 #include <QObject>
 #include <QString>
@@ -49,5 +48,3 @@ class ShazamResponse {
         void        parseMetadata(const QJsonValue& metadataRef);
 
 };
-
-#endif // SHAZAM_RESPONSE_H

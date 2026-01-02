@@ -1,5 +1,4 @@
-#ifndef PIPEWIRE_MONITOR_H
-#define PIPEWIRE_MONITOR_H
+#pragma once
 
 #include <QObject>
 #include <QAudioDevice>
@@ -98,5 +97,3 @@ class PipeWireMonitor : public QObject {
         int                 m_bufferLengthInSeconds = 10;
         int                 m_minBufferSize = 0; // m_sampleRate * m_channels * m_bytesPerSample * m_bufferLengthInSeconds;
 };
-
-#endif // PIPEWIRE_MONITOR_H
