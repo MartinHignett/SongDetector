@@ -16,6 +16,7 @@ class PipeWireMonitor : public QObject {
         ~PipeWireMonitor();
 
         void    startCapture(int minDurationInSeconds, QAudioDevice* device = nullptr);
+        void    stopCapture();
 
         /*
          * Getters
@@ -52,7 +53,6 @@ class PipeWireMonitor : public QObject {
         void                negotiateFormat(const struct spa_pod* param);
         void                handleFinalFormat(const struct spa_pod* param);
         void                readFromStream(void *userData);
-        void                stopCapture();
         void                connectToStream();
         /*
          * These are char* because that is what the PipeWire API needs
