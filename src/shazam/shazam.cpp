@@ -41,8 +41,6 @@ void Shazam::onShazamResponse() {
     // Use sender() to get the QNetworkReply that emitted the signal
     auto* response = qobject_cast<QNetworkReply*>(sender());
 
-    qDebug() << "Shazam finished!";
-
     if (response) {
         QRestReply restResponse(response);
         if (!restResponse.isSuccess()) {
@@ -64,12 +62,7 @@ void Shazam::onShazamResponse() {
 }
 
 void Shazam::parseShazamResponse(const QJsonDocument& shazamJsonDocument) {
-    const auto shazamResponse = ShazamResponse::fromJsonDocument(shazamJsonDocument);
-
-    if (shazamResponse.getFound()) {
-        qDebug() << "Song name: " << shazamResponse.getTitle() << " Arist: " << shazamResponse.getArtist();
-        detectionComplete(shazamResponse);
-    }
+    detectionComplete(ShazamResponse::fromJsonDocument(shazamJsonDocument));
 }
 
 void Shazam::onShazamError() {

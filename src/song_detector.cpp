@@ -88,8 +88,6 @@ void SongDetector::onCaptureCompleted(QByteArray audioBuffer) {
 }
 
 void SongDetector::onDetectionComplete(const ShazamResponse& response) {
-    qDebug() << "onDetectionComplete";
-
     if (response.getFound()) {
         m_trayIcon.showMessage(
             "SongDetector - Song identified",
@@ -98,9 +96,10 @@ void SongDetector::onDetectionComplete(const ShazamResponse& response) {
             5000
         );
     } else {
+        qWarning() << "Song not found";
         m_trayIcon.showMessage(
             "SongDetector - Failed to identify song",
-            "",
+            "SongDetector was unable to identify the song that is playing.",
             QSystemTrayIcon::Warning,
             5000
         );
