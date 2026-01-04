@@ -6,9 +6,11 @@
 #include <QMenu>
 #include <QObject>
 #include <QSystemTrayIcon>
+#include <qnamespace.h>
 #include <qsystemtrayicon.h>
 #include <vibra.h>
 
+#include "about_dialog.h"
 #include "song_detector.h"
 #include "pipewire/pipewire_monitor.h"
 #include "settingsdialog.h"
@@ -24,7 +26,10 @@ SongDetector::SongDetector(QApplication* app) :
 
     // Setup system tray menu...
     m_menu.addAction(QCoreApplication::translate("ContextMenu", "Settings..."), this, &SongDetector::onOpenSettings);
+    m_menu.addAction(QCoreApplication::translate("ContextMenu", "About..."), this, &SongDetector::onOpenAbout);
+    m_menu.addSeparator();
     m_menu.addAction(QCoreApplication::translate("ContextMenu", "Start Identify"), this, &SongDetector::onStartDetection);
+    m_menu.addSeparator();
     m_menu.addAction(QCoreApplication::translate("ContextMenu", "Quit"), app, &QApplication::quit);
 
     // Create a system tray icon and show it
@@ -112,6 +117,12 @@ void SongDetector::onOpenSettings() {
     connect(settingsDialog, &SettingsDialog::forceDarkModeChanged, this, &SongDetector::onForceDarkIconChanged);
     connect(settingsDialog, &SettingsDialog::currentDeviceChanged, this, &SongDetector::onCurrentDeviceChanged);
     settingsDialog->show();
+}
+
+void SongDetector::onOpenAbout() {
+    const auto aboutDialog = new AboutDialog(m_pipeWireMonitor->getPipeWireVersion());
+    aboutDialog->setAttribute(Qt::WA_DeleteOnClose);
+    aboutDialog->show();
 }
 
 void SongDetector::onForceDarkIconChanged() {

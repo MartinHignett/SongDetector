@@ -4,6 +4,7 @@
 #include <QStringView>
 #include <QTimer>
 #include <pipewire/core.h>
+#include <pipewire/version.h>
 
 extern "C" {
     #include <pipewire/keys.h>
@@ -142,12 +143,18 @@ int PipeWireMonitor::getSampleRate() {
     return m_sampleRate;
 }
 
+QString PipeWireMonitor::getPipeWireVersion() {
+    return m_pipeWireVersion;
+}
+
 /*******************************************************
  * Private methods
  *******************************************************/
 
 void PipeWireMonitor::initializePipewire() {
     pw_init(nullptr, nullptr);
+
+    m_pipeWireVersion = QString(pw_get_library_version());
 
     m_loop = pw_thread_loop_new("SongDetector", nullptr);
     m_context = pw_context_new(pw_thread_loop_get_loop(m_loop), nullptr, 0);

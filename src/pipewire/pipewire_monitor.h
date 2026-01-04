@@ -5,6 +5,7 @@
 #include <pipewire/pipewire.h>
 #include <qcontainerfwd.h>
 #include <qobject.h>
+#include <qscopedpointer.h>
 
 class PipeWireMonitor : public QObject {
     Q_OBJECT
@@ -24,6 +25,7 @@ class PipeWireMonitor : public QObject {
         int     getSampleRate();
         int     getBitsPerSample();
         int     getChannels();
+        QString getPipeWireVersion();
 
     signals:
 
@@ -55,11 +57,14 @@ class PipeWireMonitor : public QObject {
         void                handleFinalFormat(const struct spa_pod* param);
         void                readFromStream(void *userData);
         void                connectToStream();
+
         /*
          * These are char* because that is what the PipeWire API needs
          */
         QScopedArrayPointer<char> m_applicationName;
         QScopedArrayPointer<char> m_deviceId;
+
+        QString             m_pipeWireVersion;
 
         // True if m_deviceId has not been set
         const bool          m_useDefaultDevice;

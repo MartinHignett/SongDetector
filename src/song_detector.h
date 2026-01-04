@@ -20,6 +20,7 @@ public slots:
     void                onForceDarkIconChanged();
     void                onStartDetection();
     void                onOpenSettings();
+    void                onOpenAbout();
     void                onCaptureCompleted(QByteArray audioBuffer);
     void                onDetectionComplete(const ShazamResponse& response);
     void                onCurrentDeviceChanged(const QString& deviceId);

@@ -4,7 +4,6 @@
 #include <QDialog>
 #include <QMediaDevices>
 #include <QSettings>
-#include <qmediadevices.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class SettingsDialog; }
