@@ -112,13 +112,12 @@ void PipeWireMonitor::startCapture(int minDurationInSeconds, QAudioDevice* devic
     }
 
     // Disconnect any existing connections
-    stopCapture();
+    onStopCapture();
     m_audioBuffer.clear();
     m_isCapturing = true;
 
     // There must be a better way than waiting 500ms...
     QTimer::singleShot(500, this, [this] {
-        qDebug() << "From startIdentify()";
         this->connectToStream();
     });
 }
@@ -281,8 +280,8 @@ void PipeWireMonitor::paramChanged(void* userData, uint32_t id, const struct spa
         case SPA_PARAM_Format:
             handleFinalFormat(param);
             break;
-        default:
-            qDebug() << "Unknown parameter id:" << id << "- ignoring";
+        // default:
+        //     qDebug() << "Unknown parameter id:" << id << "- ignoring";
     }
 }
 
@@ -319,7 +318,7 @@ void PipeWireMonitor::readFromStream(void *userData) {
 
     // Can't modify the PipeWire thread from within the thread itself,
     // so defer this to the main UI thread:
-    QMetaObject::invokeMethod(this, "stopCapture", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, "onStopCapture", Qt::QueuedConnection);
 
     // Can't send signals from the PipeWire thread,
     // so defer this to the main UI thread:
@@ -327,7 +326,7 @@ void PipeWireMonitor::readFromStream(void *userData) {
     return;
 }
 
-void PipeWireMonitor::stopCapture() {
+void PipeWireMonitor::onStopCapture() {
     qDebug() << "Stopping capture";
 
     m_isCapturing = false;
@@ -336,16 +335,12 @@ void PipeWireMonitor::stopCapture() {
         return;
     }
 
-    qDebug() << "Lock thread loop...";
     pw_thread_loop_lock(m_loop);
 
     if (pw_stream_get_state(m_stream, nullptr) != PW_STREAM_STATE_UNCONNECTED) {
-        qDebug() << "Disconnecting stream...";
         pw_stream_disconnect(m_stream);
-        qDebug() << "Stream disconnected";
     }
 
-    qDebug() << "Unlocking thread loop...";
     pw_thread_loop_unlock(m_loop);
 }
 

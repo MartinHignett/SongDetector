@@ -16,7 +16,6 @@ class PipeWireMonitor : public QObject {
         ~PipeWireMonitor();
 
         void    startCapture(int minDurationInSeconds, QAudioDevice* device = nullptr);
-        void    stopCapture();
 
         /*
          * Getters
@@ -25,9 +24,6 @@ class PipeWireMonitor : public QObject {
         int     getSampleRate();
         int     getBitsPerSample();
         int     getChannels();
-
-        // TODO: Support cancellation
-        // void cancelCapture();
 
     signals:
 
@@ -44,6 +40,11 @@ class PipeWireMonitor : public QObject {
 
         // TODO: Progress indicator
         // void progressUpdate(int secondsProcessed);
+
+    public slots:
+        void    onStopCapture();
+        // TODO: Support cancellation
+        // void cancelCapture();
 
     private:
         void                initializePipewire();
