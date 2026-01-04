@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=SongDetector
+Comment=Identify songs playing on your system using audio fingerprinting
+Exec=SongDetector
+Icon=songdetector
+Categories=AudioVideo;Audio;
+StartupNotify=true
+NoDisplay=false
+MimeType=
+StartupWMClass=SongDetector
+X-AppImage-Version=1.0.0
