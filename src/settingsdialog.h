@@ -14,7 +14,7 @@ class SettingsDialog : public QDialog
     Q_OBJECT
 
 public:
-    SettingsDialog(QWidget *parent = nullptr);
+    SettingsDialog(QSettings *settings);
     ~SettingsDialog();
 
 private:

@@ -5,6 +5,7 @@
 #include <pthread.h>
 #include <qcontainerfwd.h>
 #include <qmenu.h>
+#include <qsettings.h>
 #include <qtmetamacros.h>
 
 #include "pipewire/pipewire_monitor.h"
@@ -31,6 +32,7 @@ private:
     QSystemTrayIcon     m_trayIcon;
     QMenu               m_menu;
     QString             m_applicationName;
+    QSettings           m_settings;
 
     void                setTrayIcon();
     void                initialisePipeWire();

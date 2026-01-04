@@ -8,20 +8,22 @@
 
 #include "song_detector.h"
 
+#define APPLICATION_NAME QStringLiteral("SongDetector")
+
 int main(int argc, char *argv[])
 {
     // Create an Qt application...
     QApplication app(argc, argv);
     app.setQuitOnLastWindowClosed(false);
 
-    QCoreApplication::setOrganizationName("Martin");
-    QCoreApplication::setApplicationName("SongDetector");
+    QCoreApplication::setOrganizationName(APPLICATION_NAME);
+    QCoreApplication::setApplicationName(APPLICATION_NAME);
 
     // ...with tranlsation support
     QTranslator translator;
     const QStringList uiLanguages = QLocale::system().uiLanguages();
     for (const QString &locale : uiLanguages) {
-        const QString baseName = "SongDetector_" + QLocale(locale).name();
+        const QString baseName = APPLICATION_NAME + "_" + QLocale(locale).name();
         if (translator.load(":/i18n/" + baseName)) {
             app.installTranslator(&translator);
             break;

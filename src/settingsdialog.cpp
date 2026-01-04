@@ -1,33 +1,33 @@
 #include <QAudioDevice>
+#include <QCheckBox>
+#include <QComboBox>
 #include <QMediaDevices>
 #include <QObject>
-#include <qcheckbox.h>
-#include <qcombobox.h>
-#include <qcompare.h>
-#include <qmediadevices.h>
 
 #include "settingsdialog.h"
 #include "ui_settingsdialog.h"
 #include "settings.h"
 
-SettingsDialog::SettingsDialog(QWidget* parent)
-    : QDialog(parent)
-    , ui(new Ui::SettingsDialog)
-{
-    m_settings = new QSettings(this);
-    m_mediaDevices = new QMediaDevices(this);
-    ui->setupUi(this);
+SettingsDialog::SettingsDialog(QSettings *settings)
+    : QDialog(nullptr)
+    , m_settings(settings)
+    , ui(new Ui::SettingsDialog) {
+        m_mediaDevices = new QMediaDevices(this);
+        ui->setupUi(this);
 
-    if (m_settings->contains(DARK_TRAY_ICON_SETTING) && m_settings->value(DARK_TRAY_ICON_SETTING) == true) {
-        ui->darkModeIcon->setCheckState(Qt::CheckState::Checked);
-    } else {
-        ui->darkModeIcon->setCheckState(Qt::CheckState::Unchecked);
-    }
+        if (m_settings->contains(DARK_TRAY_ICON_SETTING) && m_settings->value(DARK_TRAY_ICON_SETTING) == true) {
+            ui->darkModeIcon->setCheckState(Qt::CheckState::Checked);
+        } else {
+            ui->darkModeIcon->setCheckState(Qt::CheckState::Unchecked);
+        }
 
-    updateAudioDevices();
-    connect(m_mediaDevices, &QMediaDevices::audioOutputsChanged, this, &SettingsDialog::updateAudioDevices);
-    connect(ui->audioDeviceCombo, &QComboBox::currentIndexChanged, this, &SettingsDialog::onDeviceChanged);
-    connect(ui->darkModeIcon, &QCheckBox::clicked, this, &SettingsDialog::setForceDarkMode);
+        updateAudioDevices();
+        connect(m_mediaDevices, &QMediaDevices::audioOutputsChanged, this, &SettingsDialog::updateAudioDevices);
+        connect(ui->audioDeviceCombo, &QComboBox::currentIndexChanged, this, &SettingsDialog::onDeviceChanged);
+        connect(ui->darkModeIcon, &QCheckBox::clicked, this, &SettingsDialog::setForceDarkMode);
+        connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &SettingsDialog::close);
+        setMaximumSize(size());
+        setMinimumSize(size());
 }
 
 SettingsDialog::~SettingsDialog()
@@ -59,15 +59,11 @@ void SettingsDialog::onDeviceChanged() {
     currentDeviceChanged(device.id());
 }
 
-/*
+/********************************
  * Slots
- */
+ ********************************/
 
 void SettingsDialog::setForceDarkMode(bool checked) {
-    if (m_settings != nullptr) {
-        m_settings->setValue(DARK_TRAY_ICON_SETTING, QVariant(checked));
-    } else {
-        qDebug() << "oops!";
-    }
+    m_settings->setValue(DARK_TRAY_ICON_SETTING, QVariant(checked));
     forceDarkModeChanged();
 }

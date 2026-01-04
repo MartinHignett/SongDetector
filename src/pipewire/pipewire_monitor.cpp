@@ -156,7 +156,7 @@ void PipeWireMonitor::initializePipewire() {
 
     m_pipeWireVersion = QString(pw_get_library_version());
 
-    m_loop = pw_thread_loop_new("SongDetector", nullptr);
+    m_loop = pw_thread_loop_new(m_applicationName.data(), nullptr);
     m_context = pw_context_new(pw_thread_loop_get_loop(m_loop), nullptr, 0);
     m_core = pw_context_connect(m_context, nullptr, 0);
 

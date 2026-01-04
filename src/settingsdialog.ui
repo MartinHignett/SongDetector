@@ -6,53 +6,66 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>471</width>
-    <height>236</height>
+    <width>371</width>
+    <height>191</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>SongDetector Settings</string>
   </property>
-  <widget class="QCheckBox" name="darkModeIcon">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>70</y>
-     <width>171</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Force Dark Mode Icon</string>
-   </property>
-   <property name="tristate">
-    <bool>false</bool>
-   </property>
-  </widget>
-  <widget class="QLabel" name="audioDeviceLabel">
+  <widget class="QWidget" name="formLayoutWidget">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>78</width>
-     <height>31</height>
+     <width>351</width>
+     <height>131</height>
     </rect>
    </property>
-   <property name="text">
-    <string>&amp;Audio device</string>
-   </property>
+   <layout class="QFormLayout" name="formLayout">
+    <item row="0" column="0">
+     <widget class="QLabel" name="audioDeviceLabel">
+      <property name="text">
+       <string>&amp;Audio device</string>
+      </property>
+      <property name="buddy">
+       <cstring>audioDeviceCombo</cstring>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QComboBox" name="audioDeviceCombo"/>
+    </item>
+    <item row="1" column="0">
+     <widget class="QCheckBox" name="darkModeIcon">
+      <property name="text">
+       <string>Force &amp;Dark Mode Icon</string>
+      </property>
+      <property name="tristate">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
-  <widget class="QComboBox" name="audioDeviceCombo">
+  <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>100</x>
-     <y>10</y>
-     <width>171</width>
-     <height>32</height>
+     <x>10</x>
+     <y>150</y>
+     <width>351</width>
+     <height>34</height>
     </rect>
+   </property>
+   <property name="standardButtons">
+    <set>QDialogButtonBox::StandardButton::Close</set>
    </property>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>audioDeviceCombo</tabstop>
+  <tabstop>darkModeIcon</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

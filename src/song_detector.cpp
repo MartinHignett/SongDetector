@@ -7,6 +7,7 @@
 #include <QObject>
 #include <QSystemTrayIcon>
 #include <qnamespace.h>
+#include <qset.h>
 #include <qsystemtrayicon.h>
 #include <vibra.h>
 
@@ -16,26 +17,27 @@
 #include "settingsdialog.h"
 #include "settings.h"
 
-SongDetector::SongDetector(QApplication* app) :
-    m_applicationName("SongDetector"),
-    m_pipeWireMonitor(nullptr),
-    m_shazam(this) {
-    initialisePipeWire();
+SongDetector::SongDetector(QApplication* app)
+    : m_applicationName("SongDetector")
+    , m_pipeWireMonitor(nullptr)
+    , m_shazam(this)
+    , m_settings(this) {
+        initialisePipeWire();
 
-    connect(&m_shazam, &Shazam::detectionComplete, this, &SongDetector::onDetectionComplete);
+        connect(&m_shazam, &Shazam::detectionComplete, this, &SongDetector::onDetectionComplete);
 
-    // Setup system tray menu...
-    m_menu.addAction(QCoreApplication::translate("ContextMenu", "Settings..."), this, &SongDetector::onOpenSettings);
-    m_menu.addAction(QCoreApplication::translate("ContextMenu", "About..."), this, &SongDetector::onOpenAbout);
-    m_menu.addSeparator();
-    m_menu.addAction(QCoreApplication::translate("ContextMenu", "Start Identify"), this, &SongDetector::onStartDetection);
-    m_menu.addSeparator();
-    m_menu.addAction(QCoreApplication::translate("ContextMenu", "Quit"), app, &QApplication::quit);
+        // Setup system tray menu...
+        m_menu.addAction(QCoreApplication::translate("ContextMenu", "Settings..."), this, &SongDetector::onOpenSettings);
+        m_menu.addAction(QCoreApplication::translate("ContextMenu", "About..."), this, &SongDetector::onOpenAbout);
+        m_menu.addSeparator();
+        m_menu.addAction(QCoreApplication::translate("ContextMenu", "Start Identify"), this, &SongDetector::onStartDetection);
+        m_menu.addSeparator();
+        m_menu.addAction(QCoreApplication::translate("ContextMenu", "Quit"), app, &QApplication::quit);
 
-    // Create a system tray icon and show it
-    m_trayIcon.setContextMenu(&m_menu);
-    setTrayIcon();
-    m_trayIcon.show();
+        // Create a system tray icon and show it
+        m_trayIcon.setContextMenu(&m_menu);
+        setTrayIcon();
+        m_trayIcon.show();
 }
 
 void SongDetector::initialisePipeWire() {
@@ -50,10 +52,9 @@ void SongDetector::initialisePipeWire() {
 
 void SongDetector::setTrayIcon() {
     bool darkModeIcon = false;
-    QSettings settings(this);
 
-    if (settings.contains(DARK_TRAY_ICON_SETTING)) {
-        darkModeIcon = settings.value(DARK_TRAY_ICON_SETTING) == true;
+    if (m_settings.contains(DARK_TRAY_ICON_SETTING)) {
+        darkModeIcon = m_settings.value(DARK_TRAY_ICON_SETTING) == true;
     } else {
         // Try to guess if we should use dark mode
         QPalette palette = QApplication::palette();
@@ -112,7 +113,7 @@ void SongDetector::onDetectionComplete(const ShazamResponse& response) {
 }
 
 void SongDetector::onOpenSettings() {
-    const auto settingsDialog = new SettingsDialog(nullptr);
+    const auto settingsDialog = new SettingsDialog(&m_settings);
     settingsDialog->setAttribute(Qt::WA_DeleteOnClose);
     connect(settingsDialog, &SettingsDialog::forceDarkModeChanged, this, &SongDetector::onForceDarkIconChanged);
     connect(settingsDialog, &SettingsDialog::currentDeviceChanged, this, &SongDetector::onCurrentDeviceChanged);
