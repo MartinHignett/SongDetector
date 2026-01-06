@@ -25,6 +25,7 @@ find_package(Qt6 6.4 REQUIRED
 )
 
 find_package(PkgConfig REQUIRED)
+find_package(KF6Notifications REQUIRED)
 pkg_check_modules(PIPEWIRE REQUIRED IMPORTED_TARGET libpipewire-0.3)
 
 # Find FFTW3 library (required by vibra)
@@ -102,6 +103,7 @@ target_link_libraries(SongDetector
         Qt6::Widgets
         Qt6::Multimedia
         Qt6::Svg
+        KF6::Notifications
         PkgConfig::PIPEWIRE
         Vibra
         ${FFTW3_LIBRARY}

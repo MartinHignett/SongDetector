@@ -1,14 +1,14 @@
 
+#include <KF6/KNotifications/KNotification>
 #include <QApplication>
 #include <QCoreApplication>
 #include <QDir>
 #include <QGuiApplication>
 #include <QMenu>
 #include <QObject>
+#include <QSet>
 #include <QSystemTrayIcon>
 #include <qnamespace.h>
-#include <qset.h>
-#include <qsystemtrayicon.h>
 #include <vibra.h>
 
 #include "about_dialog.h"
@@ -21,7 +21,9 @@ SongDetector::SongDetector(QApplication* app)
     : m_applicationName("SongDetector")
     , m_pipeWireMonitor(nullptr)
     , m_shazam(this)
-    , m_settings(this) {
+    , m_settings(this)
+    , m_icon(QIcon(":/resources/icons/app-light-mode.svg"))
+    , m_iconPixmap(m_icon.pixmap(QSize())) {
         initialisePipeWire();
 
         connect(&m_shazam, &Shazam::detectionComplete, this, &SongDetector::onDetectionComplete);
@@ -65,10 +67,13 @@ void SongDetector::setTrayIcon() {
     }
 
     if (darkModeIcon) {
-        m_trayIcon.setIcon(QIcon(":/resources/icons/app-dark-mode.svg"));
+        m_icon = QIcon(":/resources/icons/app-dark-mode.svg");
     } else {
-        m_trayIcon.setIcon(QIcon(":/resources/icons/app-light-mode.svg"));
+        m_icon = QIcon(":/resources/icons/app-light-mode.svg");
     }
+
+    m_trayIcon.setIcon(m_icon);
+    m_iconPixmap = m_icon.pixmap(QSize());
 }
 
 /*
@@ -95,19 +100,19 @@ void SongDetector::onCaptureCompleted(QByteArray audioBuffer) {
 
 void SongDetector::onDetectionComplete(const ShazamResponse& response) {
     if (response.getFound()) {
-        m_trayIcon.showMessage(
-            "SongDetector - Song identified",
-            QString("Found %1 by %2").arg(response.getTitle(), response.getArtist()),
-            QSystemTrayIcon::Information,
-            5000
+        KNotification::event(KNotification::Notification,
+            QString("SongDetector - Song identified"),
+            QString("Found %1 - %2").arg(response.getArtist(), response.getTitle()),
+            m_iconPixmap,
+            KNotification::Persistent | KNotification::CloseOnTimeout
         );
     } else {
         qWarning() << "Song not found";
-        m_trayIcon.showMessage(
+        KNotification::event(KNotification::Warning,
             "SongDetector - Failed to identify song",
             "SongDetector was unable to identify the song that is playing.",
-            QSystemTrayIcon::Warning,
-            5000
+            QPixmap(),
+            KNotification::Persistent | KNotification::CloseOnTimeout
         );
     }
 }

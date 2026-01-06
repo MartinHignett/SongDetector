@@ -100,6 +100,6 @@ class PipeWireMonitor : public QObject {
         int                 m_sampleRate  = 44100;  // Sample rate
         int                 m_channels    = 1;      // Number of channels
         int                 m_bytesPerSample = 4;   // Bytes per sample
-        int                 m_bufferLengthInSeconds = 10;
+        int                 m_bufferLengthInSeconds = 15;
         int                 m_minBufferSize = 0; // m_sampleRate * m_channels * m_bytesPerSample * m_bufferLengthInSeconds;
 };

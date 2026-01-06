@@ -4,7 +4,9 @@
 #include <QSystemTrayIcon>
 #include <pthread.h>
 #include <qcontainerfwd.h>
+#include <qicon.h>
 #include <qmenu.h>
+#include <qpixmap.h>
 #include <qsettings.h>
 #include <qtmetamacros.h>
 
@@ -33,6 +35,8 @@ private:
     QMenu               m_menu;
     QString             m_applicationName;
     QSettings           m_settings;
+    QIcon               m_icon;
+    QPixmap             m_iconPixmap;
 
     void                setTrayIcon();
     void                initialisePipeWire();
