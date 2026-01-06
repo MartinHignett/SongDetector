@@ -1,6 +1,8 @@
 #include <QApplication>
+#include <QDir>
 #include <QIcon>
 #include <QLocale>
+#include <QLockFile>
 #include <QMenu>
 #include <QSettings>
 #include <QTranslator>
@@ -18,6 +20,16 @@ int main(int argc, char *argv[])
 
     QCoreApplication::setOrganizationName(APPLICATION_NAME);
     QCoreApplication::setApplicationName(APPLICATION_NAME);
+
+    // ...but not if its already running...
+    QString lockFilePath = QDir::temp().absoluteFilePath(APPLICATION_NAME + ".lock");
+    QLockFile lockFile(lockFilePath);
+
+    // Try to lock the file for 100ms
+    if (!lockFile.tryLock(100)) {
+        qDebug() << "SongDetector is already running";
+        return 1;
+    }
 
     // ...with tranlsation support
     QTranslator translator;
