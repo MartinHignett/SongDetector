@@ -165,7 +165,7 @@ void PipeWireMonitor::initializePipewire() {
 
     const auto properties = pw_properties_new(
         PW_KEY_MEDIA_TYPE, "Audio",
-        PW_KEY_MEDIA_CATEGORY, "Capture",
+        PW_KEY_MEDIA_CATEGORY, "Monitor",
         PW_KEY_MEDIA_ROLE, "Music",
         // Hard code to Bluez monitor for now...
         // PW_KEY_NODE_TARGET, "bluez_output.AC_80_0A_2B_EC_71.1.monitor"
