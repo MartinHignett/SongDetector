@@ -27,8 +27,8 @@ jobs:
           # Adds the deb-src repository that have the KDE Frameworks development packages
           # sudo add-apt-repository ppa:kubuntu-ppa/backports
           # cat /etc/os-release
-          sudo apt-get update
-          sudo apt-get install -y git libpipewire-0.3-dev libcurl4-openssl-dev libfftw3-dev libkf6notifications-dev
+          apt-get update
+          apt-get install -y git libpipewire-0.3-dev libcurl4-openssl-dev libfftw3-dev libkf6notifications-dev
 
       - uses: actions/checkout@v4
         with:
