@@ -18,6 +18,8 @@ jobs:
     # You can convert this to a matrix build if you need cross-platform coverage.
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     runs-on: ubuntu-latest
+    container:
+      image: ubuntu:24.10
 
     steps:
       - uses: actions/checkout@v4
@@ -36,7 +38,7 @@ jobs:
       - name: Install Dependencies
         run: |
           # Adds the deb-src repository that have the KDE Frameworks development packages
-          sudo add-apt-repository ppa:kubuntu-ppa/backports
+          # sudo add-apt-repository ppa:kubuntu-ppa/backports
           sudo apt-get update
           sudo apt-get install -y libpipewire-0.3-dev libcurl4-openssl-dev libfftw3-dev libkf6notifications-dev
 
