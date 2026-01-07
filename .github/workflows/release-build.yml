@@ -28,7 +28,7 @@ jobs:
           # sudo add-apt-repository ppa:kubuntu-ppa/backports
           # cat /etc/os-release
           apt-get update
-          apt-get install -y sudo git libpipewire-0.3-dev libcurl4-openssl-dev libfftw3-dev libkf6notifications-dev
+          apt-get install -y sudo build-essential cmake git libpipewire-0.3-dev libcurl4-openssl-dev libfftw3-dev libkf6notifications-dev
 
       - uses: actions/checkout@v4
         with:
