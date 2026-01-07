@@ -35,6 +35,8 @@ jobs:
 
       - name: Install Dependencies
         run: |
+          # Adds the deb-src repository that have the KDE Frameworks development packages
+          sed -i 's/^Types: deb/Types: deb deb-src/' /etc/apt/sources.list.d/ubuntu.sources
           sudo apt-get update
           sudo apt-get install -y libpipewire-0.3-dev libcurl4-openssl-dev libfftw3-dev libkf6notifications-dev
 
