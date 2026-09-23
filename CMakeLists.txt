@@ -72,13 +72,14 @@ qt6_add_resources(SongDetector "resources"
 # Find Vibra library and headers
 find_path(VIBRA_INCLUDE_DIR
     NAMES vibra.h
-    PATHS vibra/include
+    HINTS ${CMAKE_CURRENT_SOURCE_DIR}/vibra/include
     REQUIRED
 )
 
 find_library(VIBRA_LIBRARY
-    NAMES vibra libvibra.so libvibra.a
-    PATHS vibra/build/lib vibra/build
+    NAMES vibra HINTS
+    ${CMAKE_CURRENT_SOURCE_DIR}/vibra/build/lib
+    ${CMAKE_CURRENT_SOURCE_DIR}/vibra/build
     REQUIRED
 )
 
