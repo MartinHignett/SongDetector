@@ -22,6 +22,7 @@ find_package(Qt6 6.4 REQUIRED
         LinguistTools
         Multimedia
         Svg
+        Sql
 )
 
 find_package(PkgConfig REQUIRED)
@@ -104,6 +105,7 @@ target_link_libraries(SongDetector
         Qt6::Widgets
         Qt6::Multimedia
         Qt6::Svg
+        Qt6::Sql
         KF6::Notifications
         PkgConfig::PIPEWIRE
         Vibra
