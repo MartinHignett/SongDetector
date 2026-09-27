@@ -8,10 +8,12 @@
 #include <QObject>
 #include <QSet>
 #include <QSystemTrayIcon>
+#include <qcoreapplication.h>
 #include <qnamespace.h>
 #include <vibra.h>
 
 #include "about_dialog.h"
+#include "history.h"
 #include "song_detector.h"
 #include "pipewire/pipewire_monitor.h"
 #include "settingsdialog.h"
@@ -34,6 +36,7 @@ SongDetector::SongDetector(QApplication* app)
         connect(&m_shazam, &Shazam::detectionComplete, this, &SongDetector::onDetectionComplete);
 
         // Setup system tray menu...
+        m_menu.addAction(QCoreApplication::translate("ContextMenu", "History..."), this, &SongDetector::onOpenHistory);
         m_menu.addAction(QCoreApplication::translate("ContextMenu", "Settings..."), this, &SongDetector::onOpenSettings);
         m_menu.addAction(QCoreApplication::translate("ContextMenu", "About..."), this, &SongDetector::onOpenAbout);
         m_menu.addSeparator();
@@ -136,6 +139,12 @@ void SongDetector::onOpenAbout() {
     const auto aboutDialog = new AboutDialog(m_pipeWireMonitor->getPipeWireVersion());
     aboutDialog->setAttribute(Qt::WA_DeleteOnClose);
     aboutDialog->show();
+}
+
+void SongDetector::onOpenHistory() {
+    const auto historyDialog = new History();
+    historyDialog->setAttribute(Qt::WA_DeleteOnClose);
+    historyDialog->show();
 }
 
 void SongDetector::onForceDarkIconChanged() {

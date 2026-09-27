@@ -62,7 +62,8 @@ bool SongDatabase::createSchema() {
         "    name VARCHAR(100) NOT NULL,"
         "    website VARCHAR(100),"
         "    bandcamp VARCHAR(100),"
-        "    discogs VARCHAR(100)"
+        "    discogs VARCHAR(100),"
+        "    favourite BOOLEAN NOT NULL DEFAULT 0"
         ")",
 
         "CREATE INDEX IF NOT EXISTS idx_artists_name ON artists(name)",
@@ -77,7 +78,8 @@ bool SongDatabase::createSchema() {
         "    label_uuid TEXT REFERENCES labels(label_uuid),"
         "    website VARCHAR(100),"
         "    bandcamp VARCHAR(100),"
-        "    discogs VARCHAR(100)"
+        "    discogs VARCHAR(100),"
+        "    favourite BOOLEAN NOT NULL DEFAULT 0"
         ")",
 
         "CREATE INDEX IF NOT EXISTS idx_albums_name ON albums(name)",
@@ -90,7 +92,8 @@ bool SongDatabase::createSchema() {
         "    album_uuid TEXT REFERENCES albums(album_uuid),"
         "    name VARCHAR(100) NOT NULL,"
         "    track_number INTEGER NOT NULL,"
-        "    count INTEGER NOT NULL DEFAULT 1 CHECK (count >= 1)"
+        "    count INTEGER NOT NULL DEFAULT 1 CHECK (count >= 1),"
+        "    favourite BOOLEAN NOT NULL DEFAULT 0"
         ")",
 
         "CREATE INDEX IF NOT EXISTS idx_songs_album_uuid ON songs(album_uuid)",

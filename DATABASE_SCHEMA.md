@@ -10,6 +10,7 @@
 | name         | varchar(100) | No        | No           | Song name                                             |
 | track_number | int16        | No        | No           |                                                       |
 | count        | int16        | No        | No           | Number of times this song was identified. Always >= 1 |
+| favourite    | boolean      | No        | No           | Default value false                                   |
 
 ### Indexes
 
@@ -25,6 +26,7 @@
 | website      | varchar(100) | Yes       | No           |                                                       |
 | bandcamp     | varchar(100) | Yes       | No           |                                                       |
 | discogs      | varchar(100) | Yes       | No           |                                                       |
+| favourite    | boolean      | No        | No           | Default value false                                   |
 
 ### Indexes
 
@@ -41,6 +43,7 @@
 | website      | varchar(100) | Yes       | No           |                                                       |
 | bandcamp     | varchar(100) | Yes       | No           |                                                       |
 | discogs      | varchar(100) | Yes       | No           |                                                       |
+| favourite    | boolean      | No        | No           | Default value false                                   |
 
 ### Indexes
 

@@ -24,6 +24,7 @@ public slots:
     void                onForceDarkIconChanged();
     void                onStartDetection();
     void                onOpenSettings();
+    void                onOpenHistory();
     void                onOpenAbout();
     void                onCaptureCompleted(QByteArray audioBuffer);
     void                onDetectionComplete(const ShazamResponse& response);
