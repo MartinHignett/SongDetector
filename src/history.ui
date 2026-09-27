@@ -30,44 +30,7 @@
         </attribute>
         <layout class="QGridLayout" name="gridLayout_2">
          <item row="0" column="0">
-          <widget class="QTableWidget" name="tableWidget">
-           <property name="sortingEnabled">
-            <bool>true</bool>
-           </property>
-           <property name="supportedDragActions">
-            <set>Qt::DropAction::IgnoreAction</set>
-           </property>
-           <column>
-            <property name="text">
-             <string>Indentification date</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Artist</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Song</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Album</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Track Number</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Favourite</string>
-            </property>
-           </column>
-          </widget>
+          <widget class="QTableView" name="tableView"/>
          </item>
         </layout>
        </widget>
