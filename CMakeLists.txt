@@ -48,6 +48,8 @@ qt_add_executable(SongDetector
     ${SRC_DIR}/settingsdialog.ui
     ${SRC_DIR}/song_detector.h
     ${SRC_DIR}/song_detector.cpp
+    ${SRC_DIR}/database/song_database.h
+    ${SRC_DIR}/database/song_database.cpp
     ${SRC_DIR}/pipewire/pipewire_monitor.h
     ${SRC_DIR}/pipewire/pipewire_monitor.cpp
     ${SRC_DIR}/shazam/shazam.h
@@ -97,7 +99,7 @@ set_target_properties(Vibra
         IMPORTED_LOCATION ${VIBRA_LIBRARY}
 )
 
-target_include_directories(SongDetector PRIVATE ${VIBRA_INCLUDE_DIR})
+target_include_directories(SongDetector PRIVATE ${VIBRA_INCLUDE_DIR} ${SRC_DIR})
 
 target_link_libraries(SongDetector
     PRIVATE

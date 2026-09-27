@@ -10,6 +10,7 @@
 #include <qsettings.h>
 #include <qtmetamacros.h>
 
+#include "database/song_database.h"
 #include "pipewire/pipewire_monitor.h"
 #include "shazam/shazam.h"
 
@@ -31,6 +32,7 @@ public slots:
 private:
     PipeWireMonitor*    m_pipeWireMonitor = nullptr;
     Shazam              m_shazam;
+    SongDatabase        m_songDatabase;
     QSystemTrayIcon     m_trayIcon;
     QMenu               m_menu;
     QString             m_applicationName;

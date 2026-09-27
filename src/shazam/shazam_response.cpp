@@ -17,13 +17,15 @@
 #define METADATA_TEXT QStringLiteral("text")
 
 ShazamResponse::ShazamResponse() :
-    m_found(false) {
+    m_found(false),
+    m_track(0) {
 }
 
 ShazamResponse::ShazamResponse(QString title, QString artist) :
     m_title(title),
     m_artist(artist),
-    m_found(true) {
+    m_found(true),
+    m_track(0) {
 }
 
 /* Destructor */

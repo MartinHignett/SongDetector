@@ -21,9 +21,14 @@ SongDetector::SongDetector(QApplication* app)
     : m_applicationName("SongDetector")
     , m_pipeWireMonitor(nullptr)
     , m_shazam(this)
+    , m_songDatabase(this)
     , m_settings(this)
     , m_icon(QIcon(":/resources/icons/app-light-mode.svg"))
     , m_iconPixmap(m_icon.pixmap(QSize())) {
+        if (!m_songDatabase.open()) {
+            qWarning() << "Song history will not be persisted for this session";
+        }
+
         initialisePipeWire();
 
         connect(&m_shazam, &Shazam::detectionComplete, this, &SongDetector::onDetectionComplete);
@@ -100,6 +105,8 @@ void SongDetector::onCaptureCompleted(QByteArray audioBuffer) {
 
 void SongDetector::onDetectionComplete(const ShazamResponse& response) {
     if (response.getFound()) {
+        m_songDatabase.recordDetection(response);
+
         KNotification::event(KNotification::Notification,
             QString("SongDetector - Song identified"),
             QString("Found %1 - %2").arg(response.getArtist(), response.getTitle()),
