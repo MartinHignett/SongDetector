@@ -25,6 +25,12 @@ public:
 
     bool recordDetection(const ShazamResponse& response);
 
+    /*
+    * Returns the underlying database connection, for read-only views
+    * (e.g. history models) that query it directly.
+    */
+    QSqlDatabase database() const;
+
 private:
     QSqlDatabase    m_database;
     QString         m_connectionName;
@@ -33,4 +39,5 @@ private:
     bool            createSchema();
     QString         findOrCreateArtist(const QString& name);
     QString         findOrCreateAlbum(const QString& name);
+    QString         findOrCreateSong(const QString& artistUuid, const QString& albumUuid, const ShazamResponse& response);
 };

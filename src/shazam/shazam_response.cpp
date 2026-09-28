@@ -15,6 +15,8 @@
 #define METADATA_RELEASE_DATE_FIELD QStringLiteral("Released")
 #define METADATA_TILE QStringLiteral("title")
 #define METADATA_TEXT QStringLiteral("text")
+#define TRACK_KEY_FIELD QStringLiteral("key")
+#define TRACK_ISRC_FIELD QStringLiteral("isrc")
 
 ShazamResponse::ShazamResponse() :
     m_found(false),
@@ -54,6 +56,9 @@ ShazamResponse ShazamResponse::fromJsonDocument(const QJsonDocument& json) {
     // The Shazam JSON schema seems to use subtitle for the arist name
     // I'm not sure how reliable that is...
     auto shazamResponse = ShazamResponse(track["title"].toString(), track["subtitle"].toString());
+    shazamResponse.m_shazamId = track[TRACK_KEY_FIELD].toString();
+    shazamResponse.m_isrc = track[TRACK_ISRC_FIELD].toString();
+
     const auto sectionsRef = track["sections"];
     if (sectionsRef.isArray()) {
         shazamResponse.parseSections(sectionsRef);
@@ -125,4 +130,12 @@ QString ShazamResponse::getArtist() const {
 
 int ShazamResponse::getTrack() const {
     return m_track;
+}
+
+QString ShazamResponse::getShazamId() const {
+    return m_shazamId;
+}
+
+QString ShazamResponse::getIsrc() const {
+    return m_isrc;
 }

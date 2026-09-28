@@ -24,6 +24,8 @@ class ShazamResponse {
         QString     getArtist() const;
         QString     getAlbum() const;
         int         getTrack() const;
+        QString     getShazamId() const;
+        QString     getIsrc() const;
 
     private:
         /* Constructors */
@@ -41,6 +43,10 @@ class ShazamResponse {
         QString     m_artist;
         QString     m_album;
         int         m_track;
+
+        /* Shazam's own track identifier, and the track's ISRC if known */
+        QString     m_shazamId;
+        QString     m_isrc;
 
         /* JSON parser */
         void        parseSections(const QJsonValue& sectionsRef);

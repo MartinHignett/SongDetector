@@ -92,12 +92,23 @@ bool SongDatabase::createSchema() {
         "    album_uuid TEXT REFERENCES albums(album_uuid),"
         "    name VARCHAR(100) NOT NULL,"
         "    track_number INTEGER NOT NULL,"
-        "    count INTEGER NOT NULL DEFAULT 1 CHECK (count >= 1),"
-        "    favourite BOOLEAN NOT NULL DEFAULT 0"
+        "    favourite BOOLEAN NOT NULL DEFAULT 0,"
+        "    shazam_id VARCHAR(100),"
+        "    isrc VARCHAR(100)"
         ")",
 
         "CREATE INDEX IF NOT EXISTS idx_songs_album_uuid ON songs(album_uuid)",
         "CREATE INDEX IF NOT EXISTS idx_songs_artist_uuid ON songs(artist_uuid)",
+        "CREATE INDEX IF NOT EXISTS idx_songs_shazam_id ON songs(shazam_id)",
+
+        "CREATE TABLE IF NOT EXISTS history ("
+        "    identified_on DATETIME NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),"
+        "    song_uuid TEXT NOT NULL REFERENCES songs(song_uuid),"
+        "    PRIMARY KEY (identified_on, song_uuid)"
+        ")",
+
+        "CREATE INDEX IF NOT EXISTS idx_history_song_uuid ON history(song_uuid)",
+        "CREATE INDEX IF NOT EXISTS idx_history_identified_on ON history(identified_on)",
     };
 
     QSqlQuery query(m_database);
@@ -110,6 +121,10 @@ bool SongDatabase::createSchema() {
     }
 
     return true;
+}
+
+QSqlDatabase SongDatabase::database() const {
+    return m_database;
 }
 
 QString SongDatabase::findOrCreateArtist(const QString& name) {
@@ -162,6 +177,45 @@ QString SongDatabase::findOrCreateAlbum(const QString& name) {
     return albumUuid;
 }
 
+QString SongDatabase::findOrCreateSong(const QString& artistUuid, const QString& albumUuid, const ShazamResponse& response) {
+    QSqlQuery findQuery(m_database);
+    findQuery.prepare(
+        "SELECT song_uuid FROM songs "
+        "WHERE artist_uuid = :artist_uuid AND name = :name AND track_number = :track_number"
+    );
+    findQuery.bindValue(":artist_uuid", artistUuid);
+    findQuery.bindValue(":name", response.getTitle());
+    findQuery.bindValue(":track_number", response.getTrack());
+
+    if (findQuery.exec() && findQuery.next()) {
+        return findQuery.value(0).toString();
+    }
+
+    const QString songUuid = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    const QString shazamId = response.getShazamId();
+    const QString isrc = response.getIsrc();
+
+    QSqlQuery insertQuery(m_database);
+    insertQuery.prepare(
+        "INSERT INTO songs (song_uuid, artist_uuid, album_uuid, name, track_number, shazam_id, isrc) "
+        "VALUES (:song_uuid, :artist_uuid, :album_uuid, :name, :track_number, :shazam_id, :isrc)"
+    );
+    insertQuery.bindValue(":song_uuid", songUuid);
+    insertQuery.bindValue(":artist_uuid", artistUuid);
+    insertQuery.bindValue(":album_uuid", albumUuid.isEmpty() ? QVariant() : QVariant(albumUuid));
+    insertQuery.bindValue(":name", response.getTitle());
+    insertQuery.bindValue(":track_number", response.getTrack());
+    insertQuery.bindValue(":shazam_id", shazamId.isEmpty() ? QVariant() : QVariant(shazamId));
+    insertQuery.bindValue(":isrc", isrc.isEmpty() ? QVariant() : QVariant(isrc));
+
+    if (!insertQuery.exec()) {
+        qWarning() << "Failed to create song:" << insertQuery.lastError().text();
+        return QString();
+    }
+
+    return songUuid;
+}
+
 bool SongDatabase::recordDetection(const ShazamResponse& response) {
     if (!m_database.transaction()) {
         qWarning() << "Failed to start transaction for song detection:" << m_database.lastError().text();
@@ -179,53 +233,21 @@ bool SongDatabase::recordDetection(const ShazamResponse& response) {
     // row, so albumUuid stays empty and is bound as NULL below.
     const QString albumUuid = findOrCreateAlbum(response.getAlbum());
 
-    // A song is considered a repeat detection (and just bumps `count`)
-    // when it matches on artist + name + track number.
-    QSqlQuery findSongQuery(m_database);
-    findSongQuery.prepare(
-        "SELECT song_uuid FROM songs "
-        "WHERE artist_uuid = :artist_uuid AND name = :name AND track_number = :track_number"
-    );
-    findSongQuery.bindValue(":artist_uuid", artistUuid);
-    findSongQuery.bindValue(":name", response.getTitle());
-    findSongQuery.bindValue(":track_number", response.getTrack());
+    // The song identity (artist + name + track number) is reused across
+    // repeat detections; each detection just adds a new history row.
+    const QString songUuid = findOrCreateSong(artistUuid, albumUuid, response);
 
-    if (!findSongQuery.exec()) {
-        qWarning() << "Failed to look up existing song:" << findSongQuery.lastError().text();
+    if (songUuid.isEmpty()) {
         m_database.rollback();
         return false;
     }
 
-    bool success = false;
+    QSqlQuery insertHistoryQuery(m_database);
+    insertHistoryQuery.prepare("INSERT INTO history (song_uuid) VALUES (:song_uuid)");
+    insertHistoryQuery.bindValue(":song_uuid", songUuid);
 
-    if (findSongQuery.next()) {
-        QSqlQuery updateQuery(m_database);
-        updateQuery.prepare("UPDATE songs SET count = count + 1 WHERE song_uuid = :song_uuid");
-        updateQuery.bindValue(":song_uuid", findSongQuery.value(0).toString());
-        success = updateQuery.exec();
-
-        if (!success) {
-            qWarning() << "Failed to increment song count:" << updateQuery.lastError().text();
-        }
-    } else {
-        QSqlQuery insertQuery(m_database);
-        insertQuery.prepare(
-            "INSERT INTO songs (song_uuid, artist_uuid, album_uuid, name, track_number, count) "
-            "VALUES (:song_uuid, :artist_uuid, :album_uuid, :name, :track_number, 1)"
-        );
-        insertQuery.bindValue(":song_uuid", QUuid::createUuid().toString(QUuid::WithoutBraces));
-        insertQuery.bindValue(":artist_uuid", artistUuid);
-        insertQuery.bindValue(":album_uuid", albumUuid.isEmpty() ? QVariant() : QVariant(albumUuid));
-        insertQuery.bindValue(":name", response.getTitle());
-        insertQuery.bindValue(":track_number", response.getTrack());
-        success = insertQuery.exec();
-
-        if (!success) {
-            qWarning() << "Failed to record detected song:" << insertQuery.lastError().text();
-        }
-    }
-
-    if (!success) {
+    if (!insertHistoryQuery.exec()) {
+        qWarning() << "Failed to record song history entry:" << insertHistoryQuery.lastError().text();
         m_database.rollback();
         return false;
     }

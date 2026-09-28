@@ -53,6 +53,10 @@ qt_add_executable(SongDetector
     ${SRC_DIR}/song_detector.cpp
     ${SRC_DIR}/database/song_database.h
     ${SRC_DIR}/database/song_database.cpp
+    ${SRC_DIR}/database/song_history_model.h
+    ${SRC_DIR}/database/song_history_model.cpp
+    ${SRC_DIR}/database/album_history_model.h
+    ${SRC_DIR}/database/album_history_model.cpp
     ${SRC_DIR}/pipewire/pipewire_monitor.h
     ${SRC_DIR}/pipewire/pipewire_monitor.cpp
     ${SRC_DIR}/shazam/shazam.h
