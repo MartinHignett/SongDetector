@@ -45,7 +45,8 @@ void SongHistoryModel::load(const QSqlDatabase& database) {
     QSqlQuery query(m_database);
     query.exec(
         "SELECT history.song_uuid,"
-        "       history.identified_on,"
+        "       max(history.identified_on),"
+        "       count(*) as count,"
         "       artists.name,"
         "       songs.name,"
         "       albums.name,"
@@ -55,6 +56,7 @@ void SongHistoryModel::load(const QSqlDatabase& database) {
         "JOIN songs ON songs.song_uuid = history.song_uuid "
         "JOIN artists ON artists.artist_uuid = songs.artist_uuid "
         "LEFT JOIN albums ON albums.album_uuid = songs.album_uuid "
+        "GROUP BY history.song_uuid "
         "ORDER BY history.identified_on DESC"
     );
 
@@ -66,11 +68,12 @@ void SongHistoryModel::load(const QSqlDatabase& database) {
         Row row;
         row.songUuid        = query.value(0).toString();
         row.identifiedOn    = formatIdentifiedOn(query.value(1).toString());
-        row.artist          = query.value(2).toString();
-        row.title           = query.value(3).toString();
-        row.album           = query.value(4).toString();
-        row.track           = query.value(5).toInt();
-        row.favourite       = query.value(6).toBool();
+        row.count           = query.value(2).toInt();
+        row.artist          = query.value(3).toString();
+        row.title           = query.value(4).toString();
+        row.album           = query.value(5).toString();
+        row.track           = query.value(6).toInt();
+        row.favourite       = query.value(7).toBool();
         m_rows.append(row);
     }
 
@@ -125,6 +128,7 @@ void SongHistoryModel::sortRows() {
             case TitleColumn:        return QString::compare(a.title, b.title, Qt::CaseInsensitive) < 0;
             case AlbumColumn:        return QString::compare(a.album, b.album, Qt::CaseInsensitive) < 0;
             case TrackColumn:        return a.track < b.track;
+            case CountColumn:        return a.count < b.count;
             case FavouriteColumn:    return a.favourite < b.favourite;
             default:                 return false;
         }
@@ -166,7 +170,8 @@ QVariant SongHistoryModel::data(const QModelIndex& index, int role) const {
         case ArtistColumn:       return row.artist;
         case TitleColumn:        return row.title;
         case AlbumColumn:        return row.album;
-        case TrackColumn:        return row.track;
+        case TrackColumn:        return row.track > 0 ? QVariant(row.track) : QVariant();
+        case CountColumn:        return row.count;
         default:                 return QVariant();
     }
 }
@@ -206,7 +211,7 @@ QVariant SongHistoryModel::headerData(int section, Qt::Orientation orientation, 
         return QAbstractTableModel::headerData(section, orientation, role);
     }
 
-    static const QStringList headers = {"Identified On", "Artist", "Title", "Album", "Track", "Favourite"};
+    static const QStringList headers = {"Identified On", "Artist", "Count", "Title", "Album", "Track", "Favourite"};
 
     if (section < 0 || section >= headers.size()) {
         return QVariant();

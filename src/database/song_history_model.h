@@ -20,6 +20,7 @@ public:
     enum Column {
         IdentifiedOnColumn,
         ArtistColumn,
+        CountColumn,
         TitleColumn,
         AlbumColumn,
         TrackColumn,
@@ -43,6 +44,7 @@ private:
     struct Row {
         QString songUuid;
         QString identifiedOn;
+        int     count = 1;
         QString artist;
         QString title;
         QString album;
