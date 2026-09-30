@@ -16,7 +16,7 @@
 #include "history_dialog.h"
 #include "song_detector.h"
 #include "pipewire/pipewire_monitor.h"
-#include "settingsdialog.h"
+#include "settings_dialog.h"
 #include "settings.h"
 
 SongDetector::SongDetector(QApplication* app)
