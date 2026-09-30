@@ -8,7 +8,7 @@ HistoryDialog::HistoryDialog(QWidget *parent, SongDatabase *songDatabase) :
 {
     ui->setupUi(this);
 
-    ui->tableView->setModel(&m_songsModel);
+    ui->songsTable->setModel(&m_songsModel);
     ui->albumsTable->setModel(&m_albumsModel);
 
     refresh();
@@ -30,6 +30,6 @@ void HistoryDialog::refresh()
     m_songsModel.load(db);
     m_albumsModel.load(db);
 
-    ui->tableView->resizeColumnsToContents();
+    ui->songsTable->resizeColumnsToContents();
     ui->albumsTable->resizeColumnsToContents();
 }
