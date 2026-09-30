@@ -8,19 +8,19 @@
 #include "database/song_history_model.h"
 
 namespace Ui {
-class History;
+class HistoryDialog;
 }
 
-class History : public QDialog
+class HistoryDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit History(QWidget *parent = nullptr, SongDatabase *songDatabase = nullptr);
-    ~History();
+    explicit HistoryDialog(QWidget *parent = nullptr, SongDatabase *songDatabase = nullptr);
+    ~HistoryDialog();
 
 private:
-    Ui::History         *ui;
+    Ui::HistoryDialog     *ui;
     SongDatabase        *m_songDatabase;
     SongHistoryModel    m_songsModel;
     AlbumHistoryModel   m_albumsModel;

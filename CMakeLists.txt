@@ -42,9 +42,9 @@ qt_add_executable(SongDetector
     ${SRC_DIR}/about_dialog.h
     ${SRC_DIR}/about_dialog.cpp
     ${SRC_DIR}/about_dialog.ui
-    ${SRC_DIR}/history.cpp
-    ${SRC_DIR}/history.h
-    ${SRC_DIR}/history.ui
+    ${SRC_DIR}/history_dialog.cpp
+    ${SRC_DIR}/history_dialog.h
+    ${SRC_DIR}/history_dialog.ui
     ${SRC_DIR}/main.cpp
     ${SRC_DIR}/settingsdialog.cpp
     ${SRC_DIR}/settingsdialog.h

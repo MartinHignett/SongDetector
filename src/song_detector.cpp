@@ -13,7 +13,7 @@
 #include <vibra.h>
 
 #include "about_dialog.h"
-#include "history.h"
+#include "history_dialog.h"
 #include "song_detector.h"
 #include "pipewire/pipewire_monitor.h"
 #include "settingsdialog.h"
@@ -142,7 +142,7 @@ void SongDetector::onOpenAbout() {
 }
 
 void SongDetector::onOpenHistory() {
-    const auto historyDialog = new History(nullptr, &m_songDatabase);
+    const auto historyDialog = new HistoryDialog(nullptr, &m_songDatabase);
     historyDialog->setAttribute(Qt::WA_DeleteOnClose);
     historyDialog->show();
 }

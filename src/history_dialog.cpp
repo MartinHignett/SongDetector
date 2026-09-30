@@ -1,9 +1,9 @@
-#include "history.h"
-#include "ui_history.h"
+#include "history_dialog.h"
+#include "ui_history_dialog.h"
 
-History::History(QWidget *parent, SongDatabase *songDatabase) :
+HistoryDialog::HistoryDialog(QWidget *parent, SongDatabase *songDatabase) :
     QDialog(parent),
-    ui(new Ui::History),
+    ui(new Ui::HistoryDialog),
     m_songDatabase(songDatabase)
 {
     ui->setupUi(this);
@@ -14,12 +14,12 @@ History::History(QWidget *parent, SongDatabase *songDatabase) :
     refresh();
 }
 
-History::~History()
+HistoryDialog::~HistoryDialog()
 {
     delete ui;
 }
 
-void History::refresh()
+void HistoryDialog::refresh()
 {
     if (m_songDatabase == nullptr) {
         return;
