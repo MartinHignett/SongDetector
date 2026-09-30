@@ -9,6 +9,8 @@ HistoryDialog::HistoryDialog(QWidget *parent, SongDatabase *songDatabase) :
     ui->setupUi(this);
 
     ui->songsTable->setModel(&m_songsModel);
+    ui->songsTable->setSortingEnabled(true);
+    ui->songsTable->sortByColumn(SongHistoryModel::IdentifiedOnColumn, Qt::DescendingOrder);
     ui->albumsTable->setModel(&m_albumsModel);
 
     refresh();

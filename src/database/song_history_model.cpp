@@ -5,6 +5,8 @@
 #include <QSqlError>
 #include <QSqlQuery>
 
+#include <algorithm>
+
 namespace {
 
 // history.identified_on is stored as UTC ISO-8601 with millisecond
@@ -72,7 +74,68 @@ void SongHistoryModel::load(const QSqlDatabase& database) {
         m_rows.append(row);
     }
 
+    sortRows();
+
     endResetModel();
+}
+
+void SongHistoryModel::sort(int column, Qt::SortOrder order) {
+    if (column < 0 || column >= ColumnCount) {
+        return;
+    }
+
+    m_sortColumn = column;
+    m_sortOrder = order;
+
+    emit layoutAboutToBeChanged({}, QAbstractItemModel::VerticalSortHint);
+
+    const QModelIndexList oldIndexes = persistentIndexList();
+    QVector<int> oldRows;
+    for (const QModelIndex& index : oldIndexes) {
+        oldRows.append(index.row());
+    }
+
+    // Track each row's identity through the sort so persistent indexes
+    // (e.g. the selection) follow their rows.
+    for (int i = 0; i < m_rows.size(); ++i) {
+        m_rows[i].sortId = i;
+    }
+
+    sortRows();
+
+    QVector<int> newRowForOld(m_rows.size());
+    for (int i = 0; i < m_rows.size(); ++i) {
+        newRowForOld[m_rows.at(i).sortId] = i;
+    }
+
+    QModelIndexList newIndexes;
+    for (int i = 0; i < oldIndexes.size(); ++i) {
+        newIndexes.append(index(newRowForOld.at(oldRows.at(i)), oldIndexes.at(i).column()));
+    }
+    changePersistentIndexList(oldIndexes, newIndexes);
+
+    emit layoutChanged({}, QAbstractItemModel::VerticalSortHint);
+}
+
+void SongHistoryModel::sortRows() {
+    const auto compare = [this](const Row& a, const Row& b) {
+        switch (m_sortColumn) {
+            case IdentifiedOnColumn: return a.identifiedOn < b.identifiedOn;
+            case ArtistColumn:       return QString::compare(a.artist, b.artist, Qt::CaseInsensitive) < 0;
+            case TitleColumn:        return QString::compare(a.title, b.title, Qt::CaseInsensitive) < 0;
+            case AlbumColumn:        return QString::compare(a.album, b.album, Qt::CaseInsensitive) < 0;
+            case TrackColumn:        return a.track < b.track;
+            case FavouriteColumn:    return a.favourite < b.favourite;
+            default:                 return false;
+        }
+    };
+
+    if (m_sortOrder == Qt::AscendingOrder) {
+        std::stable_sort(m_rows.begin(), m_rows.end(), compare);
+    } else {
+        std::stable_sort(m_rows.begin(), m_rows.end(),
+                         [&compare](const Row& a, const Row& b) { return compare(b, a); });
+    }
 }
 
 int SongHistoryModel::rowCount(const QModelIndex& parent) const {

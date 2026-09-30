@@ -37,6 +37,7 @@ public:
     bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
+    void sort(int column, Qt::SortOrder order = Qt::AscendingOrder) override;
 
 private:
     struct Row {
@@ -47,8 +48,13 @@ private:
         QString album;
         int     track = 0;
         bool    favourite = false;
+        int     sortId = 0;     // scratch: pre-sort position, for persistent indexes
     };
+
+    void sortRows();
 
     QSqlDatabase    m_database;
     QVector<Row>    m_rows;
+    int             m_sortColumn = IdentifiedOnColumn;
+    Qt::SortOrder   m_sortOrder = Qt::DescendingOrder;
 };
