@@ -82,6 +82,45 @@ void SongHistoryModel::load(const QSqlDatabase& database) {
     endResetModel();
 }
 
+bool SongHistoryModel::deleteSong(int row) {
+    if (row < 0 || row >= m_rows.size()) {
+        return false;
+    }
+
+    const QString songUuid = m_rows.at(row).songUuid;
+
+    if (!m_database.transaction()) {
+        qWarning() << "Failed to start transaction:" << m_database.lastError().text();
+        return false;
+    }
+
+    // History references songs, so it must be removed first.
+    for (const char* sql : {"DELETE FROM history WHERE song_uuid = :song_uuid",
+                            "DELETE FROM songs WHERE song_uuid = :song_uuid"}) {
+        QSqlQuery query(m_database);
+        query.prepare(sql);
+        query.bindValue(":song_uuid", songUuid);
+
+        if (!query.exec()) {
+            qWarning() << "Failed to delete song:" << query.lastError().text();
+            m_database.rollback();
+            return false;
+        }
+    }
+
+    if (!m_database.commit()) {
+        qWarning() << "Failed to commit song deletion:" << m_database.lastError().text();
+        m_database.rollback();
+        return false;
+    }
+
+    beginRemoveRows(QModelIndex(), row, row);
+    m_rows.removeAt(row);
+    endRemoveRows();
+
+    return true;
+}
+
 void SongHistoryModel::sort(int column, Qt::SortOrder order) {
     if (column < 0 || column >= ColumnCount) {
         return;
@@ -172,6 +211,7 @@ QVariant SongHistoryModel::data(const QModelIndex& index, int role) const {
         case AlbumColumn:        return row.album;
         case TrackColumn:        return row.track > 0 ? QVariant(row.track) : QVariant();
         case CountColumn:        return row.count;
+        case ActionsColumn:      return QStringLiteral("...");
         default:                 return QVariant();
     }
 }
@@ -211,7 +251,7 @@ QVariant SongHistoryModel::headerData(int section, Qt::Orientation orientation, 
         return QAbstractTableModel::headerData(section, orientation, role);
     }
 
-    static const QStringList headers = {"Identified On", "Artist", "Count", "Title", "Album", "Track", "Favourite"};
+    static const QStringList headers = {"Identified On", "Artist", "Count", "Title", "Album", "Track", "Favourite", ""};
 
     if (section < 0 || section >= headers.size()) {
         return QVariant();

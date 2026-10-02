@@ -26,6 +26,7 @@ private:
     AlbumHistoryModel   m_albumsModel;
 
     void            refresh();
+    void            showSongActions(const QModelIndex& index);
 };
 
 #endif // HISTORY_H

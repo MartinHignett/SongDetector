@@ -25,12 +25,19 @@ public:
         AlbumColumn,
         TrackColumn,
         FavouriteColumn,
+        ActionsColumn,
         ColumnCount,
     };
 
     explicit SongHistoryModel(QObject* parent = nullptr);
 
     void load(const QSqlDatabase& database);
+
+    /*
+     * Deletes the song at the given row, along with its detection
+     * history, from the database and the model. Returns true on success.
+     */
+    bool deleteSong(int row);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
