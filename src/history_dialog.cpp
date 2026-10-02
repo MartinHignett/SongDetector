@@ -1,5 +1,6 @@
 #include "history_dialog.h"
 #include "ui_history_dialog.h"
+#include "settings.h"
 
 #include <QApplication>
 #include <QMenu>
@@ -25,10 +26,11 @@ public:
 
 }
 
-HistoryDialog::HistoryDialog(QWidget *parent, SongDatabase *songDatabase) :
+HistoryDialog::HistoryDialog(QWidget *parent, SongDatabase *songDatabase, QSettings *settings) :
     QDialog(parent),
     ui(new Ui::HistoryDialog),
-    m_songDatabase(songDatabase)
+    m_songDatabase(songDatabase),
+    m_settings(settings)
 {
     ui->setupUi(this);
 
@@ -41,10 +43,28 @@ HistoryDialog::HistoryDialog(QWidget *parent, SongDatabase *songDatabase) :
     ui->albumsTable->setModel(&m_albumsModel);
 
     refresh();
+
+    if (m_settings != nullptr) {
+        const QVariantList widths = m_settings->value(SONGS_TABLE_WIDTHS_SETTING).toList();
+        for (int column = 0; column < widths.size() && column < m_songsModel.columnCount(); ++column) {
+            const int width = widths.at(column).toInt();
+            if (width > 0) {
+                ui->songsTable->setColumnWidth(column, width);
+            }
+        }
+    }
 }
 
 HistoryDialog::~HistoryDialog()
 {
+    if (m_settings != nullptr) {
+        QVariantList widths;
+        for (int column = 0; column < m_songsModel.columnCount(); ++column) {
+            widths.append(ui->songsTable->columnWidth(column));
+        }
+        m_settings->setValue(SONGS_TABLE_WIDTHS_SETTING, widths);
+    }
+
     delete ui;
 }
 

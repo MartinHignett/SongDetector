@@ -2,6 +2,7 @@
 #define HISTORY_H
 
 #include <QDialog>
+#include <QSettings>
 
 #include "database/album_history_model.h"
 #include "database/song_database.h"
@@ -16,12 +17,13 @@ class HistoryDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit HistoryDialog(QWidget *parent = nullptr, SongDatabase *songDatabase = nullptr);
+    explicit HistoryDialog(QWidget *parent = nullptr, SongDatabase *songDatabase = nullptr, QSettings *settings = nullptr);
     ~HistoryDialog();
 
 private:
-    Ui::HistoryDialog     *ui;
+    Ui::HistoryDialog   *ui;
     SongDatabase        *m_songDatabase;
+    QSettings           *m_settings;
     SongHistoryModel    m_songsModel;
     AlbumHistoryModel   m_albumsModel;
 

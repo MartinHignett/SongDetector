@@ -142,7 +142,7 @@ void SongDetector::onOpenAbout() {
 }
 
 void SongDetector::onOpenHistory() {
-    const auto historyDialog = new HistoryDialog(nullptr, &m_songDatabase);
+    const auto historyDialog = new HistoryDialog(nullptr, &m_songDatabase, &m_settings);
     historyDialog->setAttribute(Qt::WA_DeleteOnClose);
     historyDialog->show();
 }
