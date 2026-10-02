@@ -45,6 +45,11 @@ HistoryDialog::HistoryDialog(QWidget *parent, SongDatabase *songDatabase, QSetti
     refresh();
 
     if (m_settings != nullptr) {
+        const QSize size = m_settings->value(HISTORY_DIALOG_SIZE_SETTING).toSize();
+        if (size.isValid()) {
+            resize(size);
+        }
+
         const QVariantList widths = m_settings->value(SONGS_TABLE_WIDTHS_SETTING).toList();
         for (int column = 0; column < widths.size() && column < m_songsModel.columnCount(); ++column) {
             const int width = widths.at(column).toInt();
@@ -58,6 +63,8 @@ HistoryDialog::HistoryDialog(QWidget *parent, SongDatabase *songDatabase, QSetti
 HistoryDialog::~HistoryDialog()
 {
     if (m_settings != nullptr) {
+        m_settings->setValue(HISTORY_DIALOG_SIZE_SETTING, size());
+
         QVariantList widths;
         for (int column = 0; column < m_songsModel.columnCount(); ++column) {
             widths.append(ui->songsTable->columnWidth(column));
