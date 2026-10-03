@@ -10,6 +10,8 @@
 
 namespace {
 
+constexpr int MinimumColumnWidth = 50;
+
 // Paints the "..." cell as a push button. Clicks are handled by the dialog.
 class ActionButtonDelegate : public QStyledItemDelegate {
 public:
@@ -39,6 +41,7 @@ HistoryDialog::HistoryDialog(QWidget *parent, SongDatabase *songDatabase, QSetti
     ui->songsTable->sortByColumn(SongHistoryModel::IdentifiedOnColumn, Qt::DescendingOrder);
     ui->songsTable->setItemDelegateForColumn(SongHistoryModel::ActionsColumn,
                                              new ActionButtonDelegate(ui->songsTable));
+    ui->songsTable->viewport()->installEventFilter(this);
     connect(ui->songsTable, &QTableView::clicked, this, &HistoryDialog::showSongActions);
     ui->albumsTable->setModel(&m_albumsModel);
 
@@ -125,4 +128,46 @@ void HistoryDialog::showSongActions(const QModelIndex& index)
     // Albums tab counts may have changed.
     m_albumsModel.load(m_songDatabase->database());
     ui->albumsTable->resizeColumnsToContents();
+}
+
+// The dialog's own resize event fires before the layout has sized the
+// table, so watch the table's viewport instead; that also covers the
+// first show.
+bool HistoryDialog::eventFilter(QObject* watched, QEvent* event)
+{
+    if (watched == ui->songsTable->viewport() && event->type() == QEvent::Resize) {
+        fillSongsTableWidth();
+    }
+
+    return QDialog::eventFilter(watched, event);
+}
+
+// Grows or shrinks the data columns in proportion to their current widths
+// so they fill the viewport; the actions button column keeps its width.
+// Columns never shrink below a minimum, so a very narrow dialog gets a
+// horizontal scrollbar instead.
+void HistoryDialog::fillSongsTableWidth()
+{
+    QTableView* table = ui->songsTable;
+
+    int total = 0;
+    int stretchable = 0;
+    for (int column = 0; column < m_songsModel.columnCount(); ++column) {
+        total += table->columnWidth(column);
+        if (column != SongHistoryModel::ActionsColumn) {
+            stretchable += table->columnWidth(column);
+        }
+    }
+
+    const int extra = table->viewport()->width() - total;
+    if (extra == 0 || stretchable <= 0) {
+        return;
+    }
+
+    for (int column = 0; column < m_songsModel.columnCount(); ++column) {
+        if (column != SongHistoryModel::ActionsColumn) {
+            const int width = table->columnWidth(column);
+            table->setColumnWidth(column, qMax(MinimumColumnWidth, width + extra * width / stretchable));
+        }
+    }
 }

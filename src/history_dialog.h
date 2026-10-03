@@ -20,6 +20,9 @@ public:
     explicit HistoryDialog(QWidget *parent = nullptr, SongDatabase *songDatabase = nullptr, QSettings *settings = nullptr);
     ~HistoryDialog();
 
+protected:
+    bool eventFilter(QObject* watched, QEvent* event) override;
+
 private:
     Ui::HistoryDialog   *ui;
     SongDatabase        *m_songDatabase;
@@ -28,6 +31,7 @@ private:
     AlbumHistoryModel   m_albumsModel;
 
     void            refresh();
+    void            fillSongsTableWidth();
     void            showSongActions(const QModelIndex& index);
 };
 
